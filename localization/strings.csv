@@ -1,0 +1,20 @@
+keys,en,tr
+MENU_SUBTITLE,Gray prototype,Gri prototip
+LEVEL_N,Level %d,Bölüm %d
+MOVES_LEFT,Moves: %d,Hamle: %d
+UNDO,Undo,Geri al
+RESTART,Restart,Baştan
+BACK,Menu,Menü
+WIN_TITLE,Route complete!,Rota tamam!
+FAIL_TITLE,Out of moves,Hamle bitti
+NEXT,Next level,Sonraki bölüm
+RETRY,Try again,Tekrar dene
+MENU,Menu,Menü
+ALL_DONE,All levels complete!,Tüm bölümler tamam!
+MOVES_USED,%d moves used,%d hamle kullanıldı
+TUT_DRAG,"Drag a road piece onto an empty square. Connect the village to the goal.","Yol parçasını sürükleyip boş kareye bırak. Köyü hedefe bağla."
+TUT_ROTATE,Tap a placed piece to rotate it.,Döndürmek için yerleştirdiğin parçaya dokun.
+TUT_BLOCKED,"Grey squares are closed. Moves are limited!","Koyu kareler kapalı. Hamlelerin sınırlı!"
+TUT_POI,The blue market must be on your route too.,Mavi pazar da rotanın üzerinde olmalı.
+HINT_SHOWN,Hint: follow the faint road.,İpucu: soluk yolu takip et.
+NO_MOVES,No moves left,Hamle kalmadı

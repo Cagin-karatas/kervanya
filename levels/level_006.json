@@ -1,0 +1,68 @@
+{
+  "level_id": "w1_c1_l006",
+  "content_version": 1.0,
+  "world_id": 1.0,
+  "chapter_id": 1.0,
+  "grid_width": 6.0,
+  "grid_height": 6.0,
+  "start_cell": [
+    0.0,
+    1.0
+  ],
+  "goal_cell": [
+    5.0,
+    1.0
+  ],
+  "blocked_cells": [],
+  "points_of_interest": [],
+  "tile_pool": {
+    "straight": 6.0,
+    "corner": 2.0
+  },
+  "move_slack": 5.0,
+  "move_limit": 9,
+  "minimum_solution_moves": 4,
+  "star_thresholds": [
+    6,
+    8
+  ],
+  "difficulty_score": 1.0,
+  "rhythm": "Rahatlama",
+  "template_id": "direct_05",
+  "tutorial_key": "",
+  "assist_after_fail_count": 3.0,
+  "solution": [
+    {
+      "cell": [
+        1,
+        1
+      ],
+      "type": "straight",
+      "rot": 1
+    },
+    {
+      "cell": [
+        2,
+        1
+      ],
+      "type": "straight",
+      "rot": 1
+    },
+    {
+      "cell": [
+        3,
+        1
+      ],
+      "type": "straight",
+      "rot": 1
+    },
+    {
+      "cell": [
+        4,
+        1
+      ],
+      "type": "straight",
+      "rot": 1
+    }
+  ]
+}
