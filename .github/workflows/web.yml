@@ -1,0 +1,61 @@
+# Her main push'unda: testleri çalıştır, web sürümünü derle, GitHub Pages'e yayınla.
+# Tek seferlik ayar: GitHub repo -> Settings -> Pages -> Source: "GitHub Actions".
+# Adres: https://cagin-karatas.github.io/kervanya/
+name: Web sürümü
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+env:
+  GODOT_VERSION: 4.5.1
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Godot ve web şablonlarını indir
+        run: |
+          curl -sSL -o godot.zip "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip"
+          unzip -q godot.zip && mv "Godot_v${GODOT_VERSION}-stable_linux.x86_64" godot && rm godot.zip
+          curl -sSL -o tpl.tpz "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_export_templates.tpz"
+          T="$HOME/.local/share/godot/export_templates/${GODOT_VERSION}.stable"
+          mkdir -p "$T" && unzip -q -j tpl.tpz 'templates/web_*' 'templates/version.txt' -d "$T" && rm tpl.tpz
+
+      - name: İçe aktar
+        run: ./godot --headless --path . --import || true
+
+      - name: Otomatik testler
+        run: ./godot --headless --path . -s tests/run_tests.gd
+
+      - name: Web dışa aktar
+        run: |
+          mkdir -p build/web
+          ./godot --headless --path . --export-release "Web" build/web/index.html
+          test -s build/web/index.wasm && test -s build/web/index.pck
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: build/web
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

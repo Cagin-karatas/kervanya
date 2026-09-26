@@ -12,7 +12,7 @@ Godot 4.5 ile dikey mobil yol bulmacası. Bu depo üretim planındaki **"Hemen b
 | 4 | Tek parmak sürükle-bırak, geri alma; parça kaybı/çoğalması fuzz testiyle doğrulandı | ✅ |
 | 5 | Rota doğrulayıcı (`RouteSolver`) ve otomatik kazanma kontrolü | ✅ |
 | 6 | 3 öğretim bölümü + 7 bölüm daha (toplam 10), sonuç ekranı, yıldız, kayıt | ✅ |
-| 7 | En az iki gerçek telefonda test ve hata listesi | ⏳ senin sıran |
+| 7 | En az iki gerçek telefonda test ve hata listesi — [test kiti](docs/gun7-test-kiti.md) | ⏳ senin sıran |
 
 ## Oynanış kuralları (prototip)
 
@@ -53,6 +53,16 @@ godot --headless --path . -s tests/run_tests.gd
 reklamsız 3 yıldız, hamle ve geri alma kuralları, geçersiz bırakmalar, 1.500 adımlık rastgele fuzz
 (parça kaybı/çoğalması yok), determinizm, hamle bitişi, kayıt + bozuk kayıttan kurtarma.
 
+## Otomatik oyun testi
+
+Oyunu gerçek dokunma olaylarıyla oynar ve ekran görüntüsü alır (sanal ekran gerekir):
+
+```bash
+godot --path . --resolution 540x960 -s tools/playtest.gd -- /tmp/kervanya-shots full     # 10 bölüm + kenar durumları
+godot --path . --resolution 540x960 -s tools/playtest.gd -- /tmp/kervanya-shots persist  # kayıt korunuyor mu
+godot --path . --resolution 540x1200 -s tools/playtest.gd -- /tmp/kervanya-shots layout  # ekran oranı
+```
+
 ## Yeni bölüm ekleme
 
 1. `levels/level_011.json` oluştur (var olan bir dosyayı kopyala). `move_slack`, `tile_pool`, hücreleri düzenle.
@@ -60,7 +70,21 @@ reklamsız 3 yıldız, hamle ve geri alma kuralları, geçersiz bırakmalar, 1.5
    `star_thresholds` ve `solution` alanlarını yazar. Çözümsüz bölümde hata verir.
 3. Testleri çalıştır.
 
+## Telefonda oynama: web sürümü
+
+Her `main` push'unda GitHub Actions testleri çalıştırır, web sürümünü derler ve yayınlar:
+**https://cagin-karatas.github.io/kervanya/** (iPhone Safari dahil her telefonda çalışır).
+
+Tek seferlik ayar: GitHub'da repo → **Settings → Pages → Source: GitHub Actions**.
+Yerelde denemek için: Project → Export → **Web** → `build/web/index.html`, sonra
+`cd build/web && python3 -m http.server` ve tarayıcıda `localhost:8000`.
+
 ## Android'de deneme (Gün 7)
+
+Hazır debug APK sohbette ek olarak paylaşıldı (git'e girmez). Kurulum ve test adımları: **[docs/gun7-test-kiti.md](docs/gun7-test-kiti.md)**.
+
+Kendin derlemek istersen:
+
 
 1. Godot → Editor → **Manage Export Templates** → indir.
 2. Editor Settings → Export → Android: Java SDK ve Android SDK yolunu ver (Android Studio ile gelir).

@@ -233,16 +233,16 @@ func _draw() -> void:
 	if not _drag.is_empty():
 		var gpos: Vector2 = _drag["pos"] + ghost_offset()
 		var target := cell_at(gpos)
-		var ignore := drag_from
+		# Gölge, parça bırakılınca alacağı yönde çizilir; görülen ile olan aynı kalır.
+		var ghost_rot: int = _drag["rot"]
 		if target.x >= 0 and target != drag_from:
 			var ok := model.can_place(target) and model.moves_left() > 0
 			draw_rect(cell_rect(target).grow(-3.0), COL_OK if ok else COL_BAD)
 			if ok:
-				var rot := model.best_rotation(_drag["type"], target, ignore)
-				_draw_road(cell_rect(target), TileDefs.mask_of(_drag["type"], rot), Color(COL_ROAD_ON, 0.55))
+				ghost_rot = model.best_rotation(_drag["type"], target, drag_from)
 		var ghost := Rect2(gpos - Vector2(_cell, _cell) * 0.5, Vector2(_cell, _cell))
 		draw_rect(ghost.grow(-6.0), Color(1, 1, 1, 0.35))
-		_draw_road(ghost, TileDefs.mask_of(_drag["type"], _drag["rot"]), COL_ROAD)
+		_draw_road(ghost, TileDefs.mask_of(_drag["type"], ghost_rot), COL_ROAD)
 
 
 func _draw_road(rect: Rect2, mask: int, color: Color) -> void:

@@ -22,6 +22,8 @@ func _level_tile(i: int) -> Control:
 	v.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	var b := UiKit.button(str(i + 1), SceneRouter.goto_level.bind(i), 170)
 	b.disabled = not unlocked
+	if not unlocked:
+		b.modulate.a = 0.35  # kilitli bölümler açıkça soluk görünsün
 	v.add_child(b)
 	var stars := StarRow.new(GameState.stars_for_level(i), 36.0)
 	stars.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
