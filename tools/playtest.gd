@@ -180,6 +180,7 @@ func run_full() -> void:
 		if FileAccess.file_exists(p):
 			DirAccess.remove_absolute(ProjectSettings.globalize_path(p))
 	gs().data = sm.load_data()
+	root.get_node("AnalyticsService").clear()
 	change_scene_to_file("res://scenes/level_select.tscn")
 	await wait_scene("LevelSelect")
 	await shot("01_menu_temiz")
@@ -316,6 +317,34 @@ func run_full() -> void:
 	var avg_ms := (Time.get_ticks_usec() - t_start) / 120.0 / 1000.0
 	notes.append("sürükleme sırasında ortalama kare süresi (sanal ekran, yazılımsal GL): %.2f ms" % avg_ms)
 	await touch(drop_pos(canvas, sol0["cell"]), false)
+
+	# --- Analitik kaydı ve gizli test raporu
+	current_scene.notification(Node.NOTIFICATION_WM_GO_BACK_REQUEST)
+	await wait_scene("LevelSelect")
+	var evs: Array = root.get_node("AnalyticsService").read_events()
+	var counts := {}
+	for e in evs:
+		counts[e["event"]] = int(counts.get(e["event"], 0)) + 1
+	notes.append("kaydedilen olaylar: %s" % JSON.stringify(counts))
+	check(int(counts.get("level_complete", 0)) == 11, "10 bölüm + bölüm 5 tekrarı = 11 level_complete")
+	check(int(counts.get("level_fail", 0)) == 3, "3 level_fail")
+	check(counts.has("tile_placed") and counts.has("tile_rotated") and counts.has("tile_undo") and counts.has("level_restart") and counts.has("level_quit") and counts.has("assist_triggered") and counts.has("tutorial_complete"), "beklenen olay türleri kaydedildi")
+	var title: Control = null
+	for l in current_scene.find_children("*", "Label", true, false):
+		if l.text == "KERVANYA":
+			title = l
+	for i in range(5):
+		await tap(title.get_global_rect().get_center())
+	check(await wait_scene("TestReport"), "başlığa 5 dokunuş test raporunu açar")
+	await shot("11_test_raporu")
+	var testers := TestReport.build(root.get_node("AnalyticsService").read_events())
+	check(testers.size() == 1 and testers[0]["reached_level3_s"] >= 0, "rapor: testçi 1 3. bölüme ulaştı")
+	await tap_button("Yeni testçi")
+	check(current_scene.name == "TestReport", "ilk dokunuş sadece onay ister")
+	await tap_button("Emin misin?")
+	check(await wait_scene("LevelSelect"), "yeni testçi menüye döner")
+	check(int(gs().data["test_tester"]) == 2 and int(gs().data["last_completed_level"]) == 0, "testçi 2, ilerleme sıfır")
+	check(find_button("2") != null and find_button("2").disabled, "yeni testçide bölüm 2 kilitli")
 
 
 func run_persist() -> void:

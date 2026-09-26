@@ -59,6 +59,16 @@ func record_win(index: int, moves_used: int) -> void:
 	}
 
 
+## Test oturumları: aynı telefonda sıradaki testçiye geçerken ilerlemeyi sıfırlar.
+func start_new_tester() -> void:
+	data["test_tester"] = int(data.get("test_tester", 1)) + 1
+	data["last_completed_level"] = 0
+	data["level_stars"] = {}
+	_fail_counts.clear()
+	SaveManager.save_data(data)
+	AnalyticsService.track("tester_start")
+
+
 func record_fail(index: int, moves_used: int) -> void:
 	_fail_counts[index] = fail_count(index) + 1
 	last_result = {

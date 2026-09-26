@@ -11,6 +11,7 @@ var moves_label: Label
 var info_label: Label
 var undo_button: Button
 var _ending := false
+var _started_ms := 0
 
 
 func _ready() -> void:
@@ -21,7 +22,7 @@ func _ready() -> void:
 	var box := UiKit.build_screen(self, 20)
 	var top := HBoxContainer.new()
 	top.add_theme_constant_override("separation", 16)
-	var back := UiKit.button(tr("BACK"), SceneRouter.goto_menu, 100)
+	var back := UiKit.button(tr("BACK"), _on_back, 100)
 	back.size_flags_horizontal = Control.SIZE_FILL
 	back.custom_minimum_size.x = 200
 	top.add_child(back)
@@ -55,6 +56,31 @@ func _ready() -> void:
 
 	_set_info_default()
 	_refresh()
+	model.acted.connect(_on_model_acted)
+	_started_ms = Time.get_ticks_msec()
+	if level_index == 0 and int(GameState.data.get("last_completed_level", 0)) == 0:
+		AnalyticsService.track("tutorial_start", _ev())
+	AnalyticsService.track("level_start", _ev())
+	if canvas.show_hint:
+		AnalyticsService.track("assist_triggered", _ev())
+
+
+## Bu bölüme ait olayların ortak parametreleri.
+func _ev(extra: Dictionary = {}) -> Dictionary:
+	var d := {"level_id": level.level_id, "level_number": level_index + 1}
+	d.merge(extra)
+	return d
+
+
+func _elapsed_ms() -> int:
+	return Time.get_ticks_msec() - _started_ms
+
+
+func _on_model_acted(kind: String) -> void:
+	var names := {"place": "tile_placed", "rotate": "tile_rotated", "move": "tile_moved",
+			"remove": "tile_returned", "undo": "tile_undo"}
+	if names.has(kind):
+		AnalyticsService.track(names[kind], _ev({"moves_left": model.moves_left()}))
 
 
 func _set_info_default() -> void:
@@ -86,6 +112,15 @@ func _finish(won: bool) -> void:
 	_ending = true
 	canvas.input_locked = true
 	undo_button.disabled = true
+	var result := _ev({"moves_used": model.moves_used, "move_limit": model.move_limit,
+			"duration_ms": _elapsed_ms()})
+	if won:
+		result["stars"] = level.stars_for(model.moves_used)
+		AnalyticsService.track("level_complete", result)
+		if level_index == 2:
+			AnalyticsService.track("tutorial_complete", _ev())
+	else:
+		AnalyticsService.track("level_fail", result)
 	await get_tree().create_timer(END_DELAY).timeout
 	if won:
 		GameState.record_win(level_index, model.moves_used)
@@ -115,6 +150,8 @@ func _on_restart() -> void:
 	if _ending:
 		return
 	canvas.cancel_interaction()
+	AnalyticsService.track("level_restart", _ev({"moves_used": model.moves_used, "duration_ms": _elapsed_ms()}))
+	_started_ms = Time.get_ticks_msec()
 	model.reset()
 	_set_info_default()
 	_refresh()
@@ -122,4 +159,11 @@ func _on_restart() -> void:
 
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_WM_GO_BACK_REQUEST:
-		SceneRouter.goto_menu()
+		_on_back()
+
+
+func _on_back() -> void:
+	if not _ending:
+		_ending = true
+		AnalyticsService.track("level_quit", _ev({"moves_used": model.moves_used, "duration_ms": _elapsed_ms()}))
+	SceneRouter.goto_menu()

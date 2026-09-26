@@ -11,6 +11,7 @@ extends RefCounted
 ## Değişmez: her parça türü için (tepsideki + tahtadaki) = bölümdeki başlangıç havuzu.
 
 signal changed
+signal acted(kind: String)  # place / rotate / move / remove / undo
 
 var level: LevelData
 var move_limit: int = 0
@@ -216,6 +217,7 @@ func undo() -> bool:
 			tray[h["type"]] -= 1
 	moves_used -= int(h["cost"])
 	changed.emit()
+	acted.emit("undo")
 	return true
 
 
@@ -239,3 +241,4 @@ func _commit(entry: Dictionary) -> void:
 	moves_used += int(entry["cost"])
 	_history.append(entry)
 	changed.emit()
+	acted.emit(entry["a"])

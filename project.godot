@@ -17,6 +17,11 @@ config/quit_on_go_back=false
 SaveManager="*res://scripts/autoload/save_manager.gd"
 GameState="*res://scripts/autoload/game_state.gd"
 SceneRouter="*res://scripts/autoload/scene_router.gd"
+AnalyticsService="*res://scripts/autoload/analytics_service.gd"
+
+[kervanya]
+
+test_tools=true
 
 [display]
 

@@ -23,6 +23,14 @@ Godot 4.5 ile dikey mobil yol bulmacası. Bu depo üretim planındaki **"Hemen b
 - Yeşil köy → kırmızı bayrak. Mavi pazar varsa o da rotada olmalı.
 - Aynı bölümde 3 başarısızlıktan sonra soluk mavi çözüm yolu (gizli yardım) görünür.
 
+## Test kaydı (analitik)
+
+`AnalyticsService` üretim planı §10'daki olayları ortak alanlarıyla (`event_time`, `app_version`, `platform`,
+`country`, `session_id`, `local_player_id`, `content_pack_version`, `experiment_group`) cihazda
+`user://analytics/events.jsonl` dosyasına yazar. Ağ gönderimi yok; serbest metin ve kişisel veri reddedilir.
+Gizli **Test raporu** ekranı: menüde başlığa 3 sn içinde 5 dokunuş (`kervanya/test_tools` ayarı açıkken).
+Yayın sürümünde `project.godot` içinde `kervanya/test_tools=false` yapılacak.
+
 ## Klasör yapısı
 
 ```

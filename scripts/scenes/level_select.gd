@@ -2,9 +2,20 @@ extends Control
 ## Prototip bölüm seçimi (ileride RegionMap sahnesiyle değişecek).
 
 
+const REPORT_TAPS := 5
+const REPORT_TAP_WINDOW_MS := 3000
+
+var _title_taps: Array[int] = []
+
+
 func _ready() -> void:
 	var box := UiKit.build_screen(self, 32)
-	box.add_child(UiKit.label("KERVANYA", 88, UiKit.ACCENT))
+	var title := UiKit.label("KERVANYA", 88, UiKit.ACCENT)
+	# Gizli test raporu girişi: başlığa 3 saniye içinde 5 kez dokun.
+	if ProjectSettings.get_setting("kervanya/test_tools", false):
+		title.mouse_filter = Control.MOUSE_FILTER_STOP
+		title.gui_input.connect(_on_title_input)
+	box.add_child(title)
 	box.add_child(UiKit.label(tr("MENU_SUBTITLE"), 36, UiKit.MUTED))
 	var grid := GridContainer.new()
 	grid.columns = 4
@@ -30,6 +41,17 @@ func _level_tile(i: int) -> Control:
 	stars.visible = unlocked
 	v.add_child(stars)
 	return v
+
+
+func _on_title_input(event: InputEvent) -> void:
+	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+		var now := Time.get_ticks_msec()
+		_title_taps.append(now)
+		while not _title_taps.is_empty() and now - _title_taps[0] > REPORT_TAP_WINDOW_MS:
+			_title_taps.pop_front()
+		if _title_taps.size() >= REPORT_TAPS:
+			_title_taps.clear()
+			SceneRouter.goto_test_report()
 
 
 func _notification(what: int) -> void:

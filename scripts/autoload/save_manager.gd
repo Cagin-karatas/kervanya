@@ -31,6 +31,7 @@ func default_data() -> Dictionary:
 		"privacy_choices": {},
 		"content_pack_version": 1,
 		"purchase_entitlements": [],
+		"test_tester": 1,
 	}
 
 
@@ -99,6 +100,7 @@ func _normalize(d: Dictionary) -> Dictionary:
 	out["save_version"] = int(out["save_version"])
 	out["last_completed_level"] = int(out["last_completed_level"])
 	out["content_pack_version"] = int(out["content_pack_version"])
+	out["test_tester"] = int(out["test_tester"])
 	var stars := {}
 	for k in out["level_stars"]:
 		stars[str(k)] = int(out["level_stars"][k])

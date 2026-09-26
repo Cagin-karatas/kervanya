@@ -22,6 +22,8 @@ func _initialize() -> void:
 		"test_best_rotation_deterministic",
 		"test_fail_when_out_of_moves",
 		"test_save_roundtrip_and_recovery",
+		"test_analytics_log_and_privacy",
+		"test_report_builder",
 	]
 	for t in tests:
 		_current = t
@@ -274,3 +276,65 @@ func test_save_roundtrip_and_recovery() -> void:
 		if FileAccess.file_exists(p):
 			DirAccess.remove_absolute(ProjectSettings.globalize_path(p))
 	sm.free()
+
+
+func test_analytics_log_and_privacy() -> void:
+	var an = load("res://scripts/autoload/analytics_service.gd").new()
+	an.log_path = "user://test_analytics/events.jsonl"
+	an.clear()
+	check(an.track("level_start", {"level_id": "w1_c1_l001", "level_number": 1}), "geçerli olay")
+	check(not an.track("bilinmeyen_olay"), "bilinmeyen olay reddedilir")
+	an.track("level_complete", {"level_number": 1, "moves_used": 3, "note": "Ali Veli 0555 123",
+			"email": "a@b.com", "nested": {"x": 1}, "Bad Key": 1})
+	var evs: Array = an.read_events()
+	check(evs.size() == 2, "iki olay kaydedildi (%d)" % evs.size())
+	if evs.size() == 2:
+		var e: Dictionary = evs[1]
+		check(e["event"] == "level_complete" and int(e["moves_used"]) == 3, "olay alanları")
+		check(not e.has("note") and not e.has("email") and not e.has("nested") and not e.has("Bad Key"),
+				"serbest metin / kişisel veri / iç içe veri kaydedilmez")
+		for k in ["event_time", "app_version", "platform", "country", "session_id", "local_player_id",
+				"content_pack_version", "experiment_group", "tester"]:
+			check(e.has(k), "ortak alan: " + k)
+	# Dönüşüm: büyük kayıt eski dosyaya taşınır, okunurken ikisi de gelir.
+	var f := FileAccess.open(an.log_path, FileAccess.WRITE)
+	f.store_string("x".repeat(an.MAX_BYTES + 10) + "\n")
+	f.close()
+	an.track("level_start", {"level_number": 2})
+	check(FileAccess.file_exists(an.old_log_path()), "büyük kayıt döndürüldü")
+	check(an.read_events().size() == 1, "bozuk satır atlanır, yeni olay okunur")
+	an.clear()
+	an.free()
+
+
+func test_report_builder() -> void:
+	var t0 := 1000.0
+	var evs := [
+		{"event": "app_open", "tester": 1, "event_time": t0},
+		{"event": "level_start", "tester": 1, "event_time": t0 + 5, "level_number": 1},
+		{"event": "tile_placed", "tester": 1, "event_time": t0 + 8, "level_number": 1},
+		{"event": "tile_rotated", "tester": 1, "event_time": t0 + 9, "level_number": 1},
+		{"event": "level_complete", "tester": 1, "event_time": t0 + 30, "level_number": 1, "moves_used": 4, "stars": 3, "duration_ms": 25000},
+		{"event": "level_start", "tester": 1, "event_time": t0 + 35, "level_number": 2},
+		{"event": "level_fail", "tester": 1, "event_time": t0 + 60, "level_number": 2, "moves_used": 9},
+		{"event": "level_start", "tester": 1, "event_time": t0 + 62, "level_number": 2},
+		{"event": "level_complete", "tester": 1, "event_time": t0 + 90, "level_number": 2, "moves_used": 6, "stars": 3, "duration_ms": 28000},
+		{"event": "level_start", "tester": 1, "event_time": t0 + 95, "level_number": 3},
+		{"event": "tester_start", "tester": 2, "event_time": t0 + 200},
+		{"event": "level_start", "tester": 2, "event_time": t0 + 210, "level_number": 1},
+		{"event": "level_quit", "tester": 2, "event_time": t0 + 400, "level_number": 1},
+	]
+	var r := TestReport.build(evs)
+	check(r.size() == 2, "iki testçi")
+	if r.size() != 2:
+		return
+	check(r[0]["reached_level3_s"] == 95 and r[0]["furthest"] == 3, "testçi 1: 3. bölüme 95 sn'de ulaştı")
+	var l1: Dictionary = r[0]["levels"][1]
+	var l2: Dictionary = r[0]["levels"][2]
+	check(l1["first_try"] == true and l1["rotations"] == 1 and l1["best_moves"] == 4, "bölüm 1 özeti")
+	check(l2["first_try"] == false and l2["attempts"] == 2 and is_equal_approx(l2["first_complete_s"], 28.0), "bölüm 2 özeti")
+	check(r[1]["reached_level3_s"] == -1 and r[1]["levels"][1]["first_try"] == false, "testçi 2: çıktı, 3. bölüme ulaşmadı")
+	var g := TestReport.gate(r)
+	check(g["testers"] == 2 and g["reached_level3"] == 1, "kapı özeti")
+	var txt := TestReport.to_text(r)
+	check(txt.contains("3. bölüme ulaşan testçi: 1 / 2") and txt.contains("Testçi 2"), "metin rapor")

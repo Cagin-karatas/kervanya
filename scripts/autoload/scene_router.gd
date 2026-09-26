@@ -4,6 +4,7 @@ extends Node
 const LEVEL_SELECT := "res://scenes/level_select.tscn"
 const PUZZLE := "res://scenes/puzzle_board.tscn"
 const RESULT := "res://scenes/result_screen.tscn"
+const TEST_REPORT := "res://scenes/test_report.tscn"
 
 
 func goto_menu() -> void:
@@ -17,6 +18,10 @@ func goto_level(index: int) -> void:
 
 func goto_result() -> void:
 	_change(RESULT)
+
+
+func goto_test_report() -> void:
+	_change(TEST_REPORT)
 
 
 func _change(path: String) -> void:

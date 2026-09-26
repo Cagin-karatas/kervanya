@@ -62,6 +62,20 @@ Cihaz: ______________  Android sürümü: ____  Ekran: ______
 
 ## 3. Testçi gözlem formu (5 kişi)
 
+### Oyun içi test raporu (otomatik kayıt)
+Oyun her testçinin bölüm başlangıcını, süresini, hamlelerini, döndürmelerini, başarısızlıklarını ve
+ipucunu **cihazda** kaydeder (hiçbir şey internete gitmez, kişisel veri tutulmaz).
+
+1. İlk testçiden önce: menüde **KERVANYA** yazısına 3 saniye içinde **5 kez dokun** → *Test raporu*.
+2. Her testçiden sonra rapora gir → **Yeni testçi** → **Emin misin?** İlerleme sıfırlanır, sıradaki
+   testçi 1. bölümden başlar; önceki testçilerin kaydı silinmez.
+3. Beş testçi bitince raporda en üstte **"3. bölüme ulaşan testçi: x / 5"** yazar. **Kopyala** ile
+   metni bana yapıştırabilirsin (kopyalama çalışmazsa ekran görüntüsü al).
+
+Rapor objektif kısmı verir (süre, deneme, ilk denemede bitirme). Aşağıdaki tabloya senin gözlemin
+girer: *yardımsız* mı ulaştı, nerede takıldı, döndürmeyi kendi mi keşfetti.
+
+
 Kurallar: telefonu ver, **hiçbir şey açıklama**, sadece izle ve not al. Takılırsa 60 saniye bekle.
 En sonda tek soru sor: *"Yarın tekrar oynamak ister misin?"*
 
