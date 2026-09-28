@@ -7,6 +7,10 @@ var levels: Array[LevelData] = []
 var data: Dictionary = {}
 var current_level_index: int = 0
 var last_result: Dictionary = {}
+## Bölüm editöründen "Dene" ile açılan geçici bölüm; doluysa bulmaca ekranı bunu oynar.
+var test_level: LevelData = null
+## Bölüm editörünün üzerinde çalıştığı taslak (Dene'den dönünce korunur).
+var editor_draft: Dictionary = {}
 var _fail_counts: Dictionary = {}
 
 

@@ -32,6 +32,12 @@ func _solve(level: LevelData, max_tiles: int) -> Dictionary:
 		_required[p] = true
 	for b in level.blocked_cells:
 		_blocked[b] = true
+	# Rota, havuzdaki parça sayısından ve boş hücre sayısından uzun olamaz.
+	var pool_total := 0
+	for t in level.tile_pool:
+		pool_total += int(level.tile_pool[t])
+	var free_cells := level.grid_width * level.grid_height - _blocked.size() - 2 - level.points_of_interest.size()
+	max_tiles = mini(max_tiles, mini(pool_total, free_cells))
 	for limit in range(0, max_tiles + 1):
 		_limit = limit
 		_visited = {level.start_cell: true}

@@ -40,6 +40,7 @@ func _ready() -> void:
 	row.add_child(_new_btn)
 	row.add_child(UiKit.button("Menü", SceneRouter.goto_menu, 110))
 	box.add_child(row)
+	box.add_child(UiKit.button("Bölüm editörü", SceneRouter.goto_level_editor, 110))
 
 
 func _add_tester(list: VBoxContainer, r: Dictionary) -> void:

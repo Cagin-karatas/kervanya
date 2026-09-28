@@ -37,6 +37,8 @@ func _main() -> void:
 			await run_persist()
 		"layout":
 			await run_layout()
+		"editor":
+			await run_editor()
 	print("\nSONUÇ [%s] %d geçti, %d başarısız" % [mode, passed, failed])
 	for n in notes:
 		print("  not: " + n)
@@ -394,3 +396,63 @@ func _check_controls_inside(vp: Rect2, where: String) -> void:
 				check(false, "%s: '%s' ekran dışına taşıyor %s" % [where, c.get("text"), c.get_global_rect()])
 				return
 	check(true, where)
+
+
+func run_editor() -> void:
+	var an = root.get_node("AnalyticsService")
+	var events_before: int = an.read_events().size()
+	change_scene_to_file("res://scenes/level_editor.tscn")
+	await wait_scene("LevelEditor")
+	var ed: Node = current_scene
+	var g: EditorGrid = ed.grid
+	await shot("e1_editor_bos")
+	# Kapalı kare boya: (2,1),(2,2),(2,3) sürükleyerek
+	var gt := g.get_global_transform()
+	g._layout()
+	var p := func(c: Vector2i) -> Vector2: return gt * g._rect(c).get_center()
+	await drag_path(p.call(Vector2i(2, 1)), p.call(Vector2i(2, 3)), true, 12)
+	check(g.data["blocked_cells"].size() == 3, "sürükleyerek 3 kapalı kare boyandı (%d)" % g.data["blocked_cells"].size())
+	await tap_button("Çöz")
+	check(ed.status.text.begins_with("Çözülebilir"), "çöz: %s" % ed.status.text)
+	check(g.solution.size() > 0, "çözüm önizlemesi çizildi")
+	await shot("e2_editor_cozum")
+	# Çözümsüz durum: tüm sütunu kapat
+	await drag_path(p.call(Vector2i(2, 0)), p.call(Vector2i(2, 4)), true, 12)
+	await tap_button("Çöz")
+	check(ed.status.text.begins_with("Sorun"), "kapalı sütunla çözümsüz: %s" % ed.status.text)
+	# Rastgele üretim
+	ed.spins["w"].value = 6
+	ed.spins["h"].value = 6
+	ed.spins["pois"].value = 1
+	ed.spins["seed"].value = 42
+	await tap_button("Rastgele")
+	check(ed.status.text.contains("Seed 42 üretildi") and ed.status.text.contains("Çözülebilir"), "rastgele: %s" % ed.status.text)
+	var draft_json := JSON.stringify(gs().editor_draft)
+	await shot("e3_editor_rastgele")
+	# Dene: bölümü oyna ve editöre dön
+	await tap_button("Dene")
+	check(await wait_scene("PuzzleBoard"), "Dene bulmaca ekranını açar")
+	await play_solution(current_scene)
+	check(current_scene.model.is_complete(), "editör bölümü dokunuşlarla çözüldü")
+	await shot("e4_editor_dene")
+	check(await wait_scene("LevelEditor", 400), "Dene bitince editöre döner")
+	check(gs().test_level == null, "test bölümü temizlendi")
+	check(JSON.stringify(gs().editor_draft) == draft_json, "taslak korundu")
+	check(an.read_events().size() == events_before, "editör testi analitiğe yazılmadı")
+	# Kaydet: yeni numaraya yaz, sonra geri al
+	ed = current_scene
+	var n: int = gs().level_count() + 1
+	ed.number_spin.value = n
+	await tap_button("Kaydet")
+	var path := "res://levels/level_%03d.json" % n
+	check(FileAccess.file_exists(path) and gs().level_count() == n, "bölüm %d kaydedildi ve kataloğa eklendi" % n)
+	if FileAccess.file_exists(path):
+		var saved: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(path))
+		check(saved["level_id"] == "w1_c1_l%03d" % n and saved.has("solution"), "kayıtlı bölüm kimliği ve çözümü")
+		DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
+		gs().load_levels()
+	# Yükle
+	ed.number_spin.value = 8
+	await tap_button("Yükle")
+	check(ed.status.text.begins_with("Bölüm 8 yüklendi") and gs().editor_draft["level_id"] == "w1_c1_l008", "bölüm 8 yüklendi")
+	await shot("e5_editor_yukle")

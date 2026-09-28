@@ -71,12 +71,19 @@ godot --path . --resolution 540x960 -s tools/playtest.gd -- /tmp/kervanya-shots 
 godot --path . --resolution 540x1200 -s tools/playtest.gd -- /tmp/kervanya-shots layout  # ekran oranı
 ```
 
-## Yeni bölüm ekleme
+## Yeni bölüm ekleme: Bölüm editörü
 
-1. `levels/level_011.json` oluştur (var olan bir dosyayı kopyala). `move_slack`, `tile_pool`, hücreleri düzenle.
-2. `godot --headless --path . -s tools/bake_levels.gd` → solver `minimum_solution_moves`, `move_limit`,
-   `star_thresholds` ve `solution` alanlarını yazar. Çözümsüz bölümde hata verir.
-3. Testleri çalıştır.
+1. Godot'da `scenes/level_editor.tscn` sahnesini aç ve **F6** (bu sahneyi çalıştır). Ya da oyunda:
+   menü → başlığa 5 dokunuş → Test raporu → **Bölüm editörü**.
+2. Araç seç (Boş / Kapalı / Başlangıç / Hedef / Pazar) ve tahtaya dokun ya da sürükle.
+   Genişlik, yükseklik, düz/köşe parça sayısı, hamle payı ve zorluğu alttan ayarla.
+3. **Çöz**: çözücü rotayı bulur, en kısa rotayı ve hamle limitini yazar; çözüm yoksa nedenini söyler.
+   **Rastgele**: seed'den çözülebilir bölüm üretir (aynı seed hep aynı bölüm). **Dene**: bölümü oynat.
+4. **Kaydet**: bölüm numarasını seç (en fazla son bölüm + 1). Godot içinden çalışırken
+   `levels/level_NNN.json` yazılır ve oyuna eklenir; tekrar kurallarına uymayan durumlar uyarı olarak çıkar.
+5. `godot --headless --path . -s tests/run_tests.gd` ile testleri çalıştır, sonra commit + push.
+
+Toplu yeniden pişirme ve tekrar kuralı denetimi: `godot --headless --path . -s tools/bake_levels.gd`
 
 ## Telefonda oynama: web sürümü
 
@@ -96,9 +103,9 @@ Kendin derlemek istersen:
 
 1. Godot → Editor → **Manage Export Templates** → indir.
 2. Editor Settings → Export → Android: Java SDK ve Android SDK yolunu ver (Android Studio ile gelir).
-3. Project → Export → **Android** (hazır ön ayar, `com.kervanya.game`) → debug APK üret veya
+3. Project → Export → **Android** (hazır ön ayar, `com.caginkaratas.kervanya`) → debug APK üret veya
    telefon USB ile bağlıyken üstteki Android simgesiyle doğrudan çalıştır.
-4. Paket adı taslaktır; marka kontrolünden sonra değişecek (planın 1-2. görevleri).
+4. Paket adı ve isim kontrolü: [docs/isim-ve-paket.md](docs/isim-ve-paket.md).
 
 iOS için Xcode + Apple Developer hesabı gerekir; TestFlight yapısı planın 5. görevidir.
 

@@ -7,11 +7,11 @@
   "grid_height": 5.0,
   "start_cell": [
     0.0,
-    0.0
+    1.0
   ],
   "goal_cell": [
     4.0,
-    4.0
+    3.0
   ],
   "blocked_cells": [
     [
@@ -25,11 +25,11 @@
     "corner": 4.0
   },
   "move_slack": 4.0,
-  "move_limit": 11,
-  "minimum_solution_moves": 7,
+  "move_limit": 9,
+  "minimum_solution_moves": 5,
   "star_thresholds": [
-    9,
-    10
+    7,
+    8
   ],
   "difficulty_score": 2.0,
   "rhythm": "Seçim",
@@ -40,7 +40,7 @@
     {
       "cell": [
         1,
-        0
+        1
       ],
       "type": "straight",
       "rot": 1
@@ -48,7 +48,7 @@
     {
       "cell": [
         2,
-        0
+        1
       ],
       "type": "straight",
       "rot": 1
@@ -56,7 +56,7 @@
     {
       "cell": [
         3,
-        0
+        1
       ],
       "type": "straight",
       "rot": 1
@@ -64,7 +64,7 @@
     {
       "cell": [
         4,
-        0
+        1
       ],
       "type": "corner",
       "rot": 2
@@ -72,23 +72,7 @@
     {
       "cell": [
         4,
-        1
-      ],
-      "type": "straight",
-      "rot": 0
-    },
-    {
-      "cell": [
-        4,
         2
-      ],
-      "type": "straight",
-      "rot": 0
-    },
-    {
-      "cell": [
-        4,
-        3
       ],
       "type": "straight",
       "rot": 0

@@ -24,6 +24,9 @@ func _initialize() -> void:
 		"test_save_roundtrip_and_recovery",
 		"test_analytics_log_and_privacy",
 		"test_report_builder",
+		"test_level_baker",
+		"test_generator_deterministic_and_solvable",
+		"test_sequence_rules",
 	]
 	for t in tests:
 		_current = t
@@ -338,3 +341,59 @@ func test_report_builder() -> void:
 	check(g["testers"] == 2 and g["reached_level3"] == 1, "kapı özeti")
 	var txt := TestReport.to_text(r)
 	check(txt.contains("3. bölüme ulaşan testçi: 1 / 2") and txt.contains("Testçi 2"), "metin rapor")
+
+
+func test_level_baker() -> void:
+	var d := {"level_id": "t", "grid_width": 5, "grid_height": 5, "start_cell": [0, 2], "goal_cell": [4, 2],
+			"blocked_cells": [], "points_of_interest": [], "tile_pool": {"straight": 3, "corner": 0}, "move_slack": 4}
+	var r := LevelBaker.bake(d)
+	check(r["ok"] and r["min_moves"] == 3 and int(r["data"]["move_limit"]) == 7, "düz rota pişirildi")
+	check(r["data"]["solution"].size() == 3, "çözüm yazıldı")
+	d["tile_pool"] = {"straight": 2, "corner": 0}
+	check(not LevelBaker.bake(d)["ok"], "yetersiz havuz çözümsüz")
+	d["tile_pool"] = {"straight": 3, "corner": 0}
+	d["blocked_cells"] = [[2, 2]]
+	check(not LevelBaker.bake(d)["ok"], "kapalı kareyle çözümsüz")
+	d["goal_cell"] = [0, 2]
+	check(not LevelBaker.bake(d)["ok"], "şema hatası yakalandı")
+	# Mevcut bölümler pişirildiği haliyle aynı olmalı (bake_levels çalıştırılmış mı).
+	var levels := all_levels()
+	for i in range(levels.size()):
+		var l := levels[i]
+		var raw: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(LEVEL_PATH % (i + 1)))
+		var again := LevelBaker.bake(raw)
+		check(again["ok"] and int(again["data"]["move_limit"]) == l.move_limit, "%s pişirme güncel" % l.level_id)
+
+
+func test_generator_deterministic_and_solvable() -> void:
+	for seed in [1, 7, 42, 1234]:
+		var a := LevelBaker.generate(seed, 6, 6, {"blocked": 0.2, "pois": 1})
+		var b := LevelBaker.generate(seed, 6, 6, {"blocked": 0.2, "pois": 1})
+		check(a["ok"], "seed %d üretildi" % seed)
+		if not a["ok"]:
+			continue
+		check(JSON.stringify(a["data"]) == JSON.stringify(b["data"]), "seed %d deterministik" % seed)
+		var l := LevelData.from_dict(a["data"])
+		check(l.validate().is_empty(), "seed %d şema geçerli" % seed)
+		var m := BoardModel.new(l, 999)
+		for p in l.solution:
+			m.place_from_tray(p["type"], p["cell"])
+			var g := 0
+			while m.cell_mask(p["cell"]) != TileDefs.mask_of(p["type"], p["rot"]) and g < 4:
+				m.rotate_tile(p["cell"])
+				g += 1
+		check(m.is_complete(), "seed %d oyunda çözülüyor" % seed)
+	var c := LevelBaker.generate(7, 6, 6, {"blocked": 0.2})
+	var e := LevelBaker.generate(8, 6, 6, {"blocked": 0.2})
+	check(c["ok"] and e["ok"] and JSON.stringify(c["data"]["blocked_cells"]) != JSON.stringify(e["data"]["blocked_cells"]), "farklı seed farklı tahta")
+
+
+func test_sequence_rules() -> void:
+	var levels := all_levels()
+	check(LevelBaker.check_sequence(levels).is_empty(), "mevcut bölümler tekrar kurallarına uyuyor: %s" % LevelBaker.check_sequence(levels))
+	var dup: Array = [levels[0], levels[1], levels[0]]
+	var w := LevelBaker.check_sequence(dup)
+	check(" ".join(w).contains("birebir aynı") and " ".join(w).contains("şablon"), "tekrar eden tahta ve şablon yakalandı")
+	var hard_a := LevelData.from_dict({"level_id": "a", "difficulty_score": 8, "start_cell": [0, 0], "goal_cell": [4, 4], "template_id": "x"})
+	var hard_b := LevelData.from_dict({"level_id": "b", "difficulty_score": 9, "start_cell": [0, 1], "goal_cell": [4, 3], "template_id": "y"})
+	check(" ".join(LevelBaker.check_sequence([hard_a, hard_b])).contains("iki zor"), "arka arkaya zor bölüm yakalandı")

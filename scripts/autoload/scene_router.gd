@@ -5,6 +5,7 @@ const LEVEL_SELECT := "res://scenes/level_select.tscn"
 const PUZZLE := "res://scenes/puzzle_board.tscn"
 const RESULT := "res://scenes/result_screen.tscn"
 const TEST_REPORT := "res://scenes/test_report.tscn"
+const LEVEL_EDITOR := "res://scenes/level_editor.tscn"
 
 
 func goto_menu() -> void:
@@ -22,6 +23,16 @@ func goto_result() -> void:
 
 func goto_test_report() -> void:
 	_change(TEST_REPORT)
+
+
+func goto_level_editor() -> void:
+	_change(LEVEL_EDITOR)
+
+
+## Editördeki bölümü kayıt ve analitiğe dokunmadan oynatır.
+func play_test_level(level: LevelData) -> void:
+	GameState.test_level = level
+	_change(PUZZLE)
 
 
 func _change(path: String) -> void:
