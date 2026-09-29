@@ -14,6 +14,7 @@ const EVENTS := [
 	"level_start", "level_complete", "level_fail", "level_quit", "level_restart",
 	"tile_placed", "tile_rotated", "tile_moved", "tile_returned", "tile_undo",
 	"assist_triggered", "report_opened",
+	"journey_start", "journey_hit", "journey_complete",
 ]
 
 var log_path := LOG_PATH

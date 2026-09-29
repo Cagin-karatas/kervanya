@@ -27,6 +27,9 @@ func _initialize() -> void:
 		"test_level_baker",
 		"test_generator_deterministic_and_solvable",
 		"test_sequence_rules",
+		"test_journey_model",
+		"test_economy",
+		"test_generated_levels_properties",
 	]
 	for t in tests:
 		_current = t
@@ -397,3 +400,88 @@ func test_sequence_rules() -> void:
 	var hard_a := LevelData.from_dict({"level_id": "a", "difficulty_score": 8, "start_cell": [0, 0], "goal_cell": [4, 4], "template_id": "x"})
 	var hard_b := LevelData.from_dict({"level_id": "b", "difficulty_score": 9, "start_cell": [0, 1], "goal_cell": [4, 3], "template_id": "y"})
 	check(" ".join(LevelBaker.check_sequence([hard_a, hard_b])).contains("iki zor"), "arka arkaya zor bölüm yakalandı")
+
+
+## Rakip taşlardan önceden kaçan "mükemmel oyuncu".
+func _dodge(m: JourneyModel) -> void:
+	for it in m.items:
+		if it["done"] or it["kind"] != "rock":
+			continue
+		if it["y"] - m.distance < 1.0 and it["lane"] == m.lane:
+			m.move(1 if m.lane < JourneyModel.LANES - 1 else -1)
+		return
+
+
+func test_journey_model() -> void:
+	var a := JourneyModel.new(123, 8, "medium")
+	var b := JourneyModel.new(123, 8, "medium")
+	check(JSON.stringify(a.items) == JSON.stringify(b.items), "aynı seed aynı yol")
+	check(JSON.stringify(a.items) != JSON.stringify(JourneyModel.new(124, 8, "medium").items), "farklı seed farklı yol")
+	check(is_equal_approx(a.duration, 14.4), "süre rota uzunluğundan: %s" % a.duration)
+	check(JourneyModel.new(1, 100, "easy").duration == 22.0 and JourneyModel.new(1, 0, "easy").duration == 10.0, "süre sınırları")
+	# Her sırada tek nesne: her an en az iki şerit açık
+	var ys := {}
+	for it in a.items:
+		check(not ys.has(it["y"]), "aynı hizada iki nesne yok")
+		ys[it["y"]] = true
+	# Hiç hareket etmeyen oyuncu çarpar; en fazla 3 çarpmada biter
+	var idle := JourneyModel.new(7, 10, "hard")
+	while not idle.finished:
+		idle.step(1.0 / 60.0)
+	check(idle.hits > 0 and idle.hits <= JourneyModel.MAX_HITS, "hareketsiz oyuncu çarpar (%d)" % idle.hits)
+	# Mükemmel oyuncu hiç çarpmaz ve süre dolunca biter
+	for diff in ["easy", "medium", "hard"]:
+		var m := JourneyModel.new(99, 10, diff)
+		while not m.finished:
+			_dodge(m)
+			m.step(1.0 / 60.0)
+		check(m.hits == 0 and m.result()["completed"], "%s: kaçan oyuncu çarpmadan bitirir (çarpma %d)" % [diff, m.hits])
+		check(absf(m.t - m.duration) < 0.05, "%s: süre doldu" % diff)
+	# Hızlanma daha çok yol aldırır
+	var slow := JourneyModel.new(5, 10, "easy")
+	var fast := JourneyModel.new(5, 10, "easy")
+	for i in range(60):
+		if i % 30 == 0:
+			fast.boost()
+		slow.step(1.0 / 60.0)
+		fast.step(1.0 / 60.0)
+	check(fast.distance > slow.distance * 1.3, "hızlanma mesafeyi artırır")
+	# Atlama ve ödül
+	var sk := JourneyModel.new(5, 10, "easy")
+	sk.skip()
+	var r := sk.result()
+	check(r["skipped"] and not r["completed"] and r["gold"] == 0, "atlama bonus vermez")
+	var gm := JourneyModel.new(5, 10, "easy")
+	gm.bonuses = 3
+	gm.hits = 5
+	check(gm.result()["gold"] == 0, "altın negatife düşmez")
+	# Plan kuralı: bulmaca zorluğu 7+ ise yolculuk en fazla orta
+	var hard_level := LevelData.from_dict({"level_id": "h", "difficulty_score": 8})
+	check(JourneyModel.difficulty_for(hard_level, 50, "hard") == "medium", "zor bulmacada yolculuk en fazla orta")
+	check(JourneyModel.difficulty_for(hard_level, 5) == "easy" and JourneyModel.difficulty_for(hard_level, 15) == "medium", "varsayılan yolculuk zorluğu")
+
+
+func test_economy() -> void:
+	var l := LevelData.from_dict({"level_id": "e", "difficulty_score": 3})
+	check(GameState_puzzle_gold(l, true, 3, 0) == 21, "ilk tamamlanma + 3 yıldız: 10+6+5")
+	check(GameState_puzzle_gold(l, false, 3, 3) == 3, "tekrar oynama 3 altın")
+	check(GameState_puzzle_gold(l, false, 3, 2) == 8, "sonradan 3 yıldız +5")
+	check(GameState_puzzle_gold(l, true, 2, 0) == 16, "ilk tamamlanma 2 yıldız")
+
+
+func GameState_puzzle_gold(l: LevelData, first: bool, stars: int, prev: int) -> int:
+	return load("res://scripts/autoload/game_state.gd").puzzle_gold(l, first, stars, prev)
+
+
+func test_generated_levels_properties() -> void:
+	var levels := all_levels()
+	check(levels.size() >= 20, "en az 20 bölüm (%d)" % levels.size())
+	for i in range(10, mini(20, levels.size())):
+		var raw: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(LEVEL_PATH % (i + 1)))
+		check(raw.has("seed"), "bölüm %d seed kaydı var" % (i + 1))
+		check(int(raw["difficulty_score"]) == LevelBaker.difficulty_score(raw), "bölüm %d zorluk puanı güncel" % (i + 1))
+		if raw.get("rhythm", "") in ["Alternatif çözüm", "Zor bölüm", "Fasıl finali"]:
+			check(LevelBaker.has_alternative(raw), "bölüm %d en az iki çözüm" % (i + 1))
+		var regen := LevelBaker.generate(int(raw["seed"]), int(raw["grid_width"]), int(raw["grid_height"]), {
+			"blocked": 0.0, "pois": 0})
+		check(regen["ok"], "bölüm %d seed yeniden üretilebilir" % (i + 1))

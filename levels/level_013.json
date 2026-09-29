@@ -1,0 +1,123 @@
+{
+  "level_id": "w1_c1_l013",
+  "content_version": 1,
+  "world_id": 1,
+  "chapter_id": 1,
+  "grid_width": 6,
+  "grid_height": 6,
+  "start_cell": [
+    0,
+    0
+  ],
+  "goal_cell": [
+    4,
+    5
+  ],
+  "blocked_cells": [
+    [
+      3,
+      2
+    ],
+    [
+      0,
+      3
+    ],
+    [
+      0,
+      4
+    ],
+    [
+      1,
+      4
+    ],
+    [
+      5,
+      4
+    ],
+    [
+      1,
+      5
+    ]
+  ],
+  "points_of_interest": [
+    [
+      2,
+      3
+    ]
+  ],
+  "tile_pool": {
+    "straight": 6,
+    "corner": 3
+  },
+  "move_slack": 3,
+  "difficulty_score": 5,
+  "rhythm": "Yıldız hedefi",
+  "template_id": "star_01",
+  "tutorial_key": "",
+  "assist_after_fail_count": 3,
+  "seed": 3100,
+  "minimum_solution_moves": 7,
+  "move_limit": 10,
+  "star_thresholds": [
+    9,
+    10
+  ],
+  "solution": [
+    {
+      "cell": [
+        1,
+        0
+      ],
+      "type": "straight",
+      "rot": 1
+    },
+    {
+      "cell": [
+        2,
+        0
+      ],
+      "type": "corner",
+      "rot": 2
+    },
+    {
+      "cell": [
+        2,
+        1
+      ],
+      "type": "straight",
+      "rot": 0
+    },
+    {
+      "cell": [
+        2,
+        2
+      ],
+      "type": "straight",
+      "rot": 0
+    },
+    {
+      "cell": [
+        3,
+        3
+      ],
+      "type": "straight",
+      "rot": 1
+    },
+    {
+      "cell": [
+        4,
+        3
+      ],
+      "type": "corner",
+      "rot": 2
+    },
+    {
+      "cell": [
+        4,
+        4
+      ],
+      "type": "straight",
+      "rot": 0
+    }
+  ]
+}

@@ -6,6 +6,7 @@ const PUZZLE := "res://scenes/puzzle_board.tscn"
 const RESULT := "res://scenes/result_screen.tscn"
 const TEST_REPORT := "res://scenes/test_report.tscn"
 const LEVEL_EDITOR := "res://scenes/level_editor.tscn"
+const JOURNEY := "res://scenes/journey.tscn"
 
 
 func goto_menu() -> void:
@@ -19,6 +20,10 @@ func goto_level(index: int) -> void:
 
 func goto_result() -> void:
 	_change(RESULT)
+
+
+func goto_journey() -> void:
+	_change(JOURNEY)
 
 
 func goto_test_report() -> void:

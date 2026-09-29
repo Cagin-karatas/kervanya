@@ -137,3 +137,45 @@ static func board_key(l: LevelData) -> String:
 	var p := l.points_of_interest.duplicate()
 	p.sort()
 	return "%dx%d|%s|%s|%s|%s|%s" % [l.grid_width, l.grid_height, l.start_cell, l.goal_cell, b, p, l.tile_pool]
+
+
+## Plan §7 zorluk bileşenleri (her biri 0-2): rota, hamle, tahta, hedef, mekanik (parça havuzu darlığı).
+static func difficulty_components(d: Dictionary) -> Dictionary:
+	var w := int(d.get("grid_width", 5))
+	var h := int(d.get("grid_height", 5))
+	var min_moves := int(d.get("minimum_solution_moves", 0))
+	var slack := int(d.get("move_slack", 4))
+	var density := float(d.get("blocked_cells", []).size()) / float(w * h)
+	var pois: int = d.get("points_of_interest", []).size()
+	var pool := 0
+	for k in d.get("tile_pool", {}):
+		pool += int(d["tile_pool"][k])
+	var spare := pool - min_moves
+	return {
+		"route": 0 if min_moves <= 6 else (1 if min_moves <= 10 else 2),
+		"moves": 0 if slack >= 5 else (1 if slack >= 3 else 2),
+		"board": 0 if density < 0.1 else (1 if density < 0.2 else 2),
+		"goals": mini(pois, 2),
+		"mechanic": 0 if spare >= 3 else (1 if spare >= 1 else 2),
+	}
+
+
+static func difficulty_score(d: Dictionary) -> int:
+	var total := 0
+	var comps := difficulty_components(d)
+	for k in comps:
+		total += int(comps[k])
+	return clampi(total, 1, 10)
+
+
+## Pişirilmiş bölümde en kısa rotadan farklı ikinci bir geçerli rota var mı?
+## Yöntem: çözümdeki her kareyi sırayla kapatıp hamle limiti içinde yeniden çöz.
+static func has_alternative(d: Dictionary) -> bool:
+	for p in d.get("solution", []):
+		var alt := d.duplicate(true)
+		alt["blocked_cells"].append(p["cell"])
+		var l := LevelData.from_dict(alt)
+		var res := RouteSolver.solve(l, int(d.get("move_limit", 40)))
+		if res["solvable"]:
+			return true
+	return false

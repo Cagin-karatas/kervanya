@@ -15,6 +15,17 @@ func _ready() -> void:
 		stars.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 		box.add_child(stars)
 	box.add_child(UiKit.label(tr("MOVES_USED") % r.get("moves_used", 0), 40, UiKit.MUTED))
+	if won:
+		var gold: int = int(r.get("gold_puzzle", 0))
+		var lines := PackedStringArray([tr("GOLD_PUZZLE") % gold])
+		var j: Dictionary = r.get("journey", {})
+		if not j.is_empty():
+			gold += int(j.get("gold", 0))
+			lines.append(tr("GOLD_JOURNEY") % [int(j.get("gold", 0)), int(j.get("bonuses", 0)), int(j.get("hits", 0))])
+			if int(j.get("trade_goods", 0)) > 0:
+				lines.append(tr("TRADE_GOODS") % int(j.get("trade_goods", 0)))
+		lines.append(tr("GOLD_TOTAL") % int(GameState.data["currencies"].get("gold", 0)))
+		box.add_child(UiKit.label("\n".join(lines), 36, UiKit.TEXT))
 	var spacer := Control.new()
 	spacer.custom_minimum_size.y = 60
 	box.add_child(spacer)

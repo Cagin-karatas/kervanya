@@ -48,19 +48,42 @@ func fail_count(index: int) -> int:
 	return int(_fail_counts.get(index, 0))
 
 
+## Bölüm ödülü (plan §8): ilk tamamlanma 10 + 2×zorluk, tekrar 3; ilk kez 3 yıldız +5.
+static func puzzle_gold(l: LevelData, first_completion: bool, stars: int, previous_stars: int) -> int:
+	var gold := (10 + 2 * l.difficulty_score) if first_completion else 3
+	if stars == 3 and previous_stars < 3:
+		gold += 5
+	return gold
+
+
 func record_win(index: int, moves_used: int) -> void:
 	var l := levels[index]
 	var stars := l.stars_for(moves_used)
 	var key := str(index + 1)
 	var level_stars: Dictionary = data["level_stars"]
-	level_stars[key] = maxi(int(level_stars.get(key, 0)), stars)
+	var previous := int(level_stars.get(key, 0))
+	var gold := puzzle_gold(l, index + 1 > int(data["last_completed_level"]), stars, previous)
+	_add_currency("gold", gold)
+	level_stars[key] = maxi(previous, stars)
 	data["last_completed_level"] = maxi(int(data["last_completed_level"]), index + 1)
 	_fail_counts[index] = 0
 	SaveManager.save_data(data)
 	last_result = {
 		"level_index": index, "won": true, "stars": stars,
-		"moves_used": moves_used, "move_limit": l.move_limit,
+		"moves_used": moves_used, "move_limit": l.move_limit, "gold_puzzle": gold,
 	}
+
+
+func record_journey(r: Dictionary) -> void:
+	_add_currency("gold", int(r.get("gold", 0)))
+	_add_currency("trade_goods", int(r.get("trade_goods", 0)))
+	SaveManager.save_data(data)
+	last_result["journey"] = r
+
+
+func _add_currency(key: String, amount: int) -> void:
+	var c: Dictionary = data["currencies"]
+	c[key] = int(c.get(key, 0)) + amount
 
 
 ## Test oturumları: aynı telefonda sıradaki testçiye geçerken ilerlemeyi sıfırlar.

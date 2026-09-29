@@ -101,6 +101,10 @@ func _normalize(d: Dictionary) -> Dictionary:
 	out["last_completed_level"] = int(out["last_completed_level"])
 	out["content_pack_version"] = int(out["content_pack_version"])
 	out["test_tester"] = int(out["test_tester"])
+	var cur := {}
+	for k in out["currencies"]:
+		cur[str(k)] = int(out["currencies"][k])
+	out["currencies"] = cur
 	var stars := {}
 	for k in out["level_stars"]:
 		stars[str(k)] = int(out["level_stars"][k])

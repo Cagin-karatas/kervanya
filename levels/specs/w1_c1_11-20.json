@@ -1,0 +1,186 @@
+{
+  "comment": "Dünya 1 / Fasıl 1 (Taş Vadi), bölüm 11-20. Plan Ek B ritmi. tools/make_levels.gd ile üretilir.",
+  "start_number": 11,
+  "grid": [
+    6,
+    6
+  ],
+  "seed_base": 1100,
+  "levels": [
+    {
+      "rhythm": "Alternatif çözüm",
+      "template_id": "alt_01",
+      "blocked": 0.12,
+      "pois": 0,
+      "slack": 4,
+      "spare_straight": 1,
+      "spare_corner": 1,
+      "min_moves": [
+        6,
+        10
+      ],
+      "difficulty": [
+        2,
+        4
+      ],
+      "need_alternative": true
+    },
+    {
+      "rhythm": "Alternatif çözüm",
+      "template_id": "alt_02",
+      "blocked": 0.12,
+      "pois": 1,
+      "slack": 4,
+      "spare_straight": 1,
+      "spare_corner": 1,
+      "min_moves": [
+        7,
+        11
+      ],
+      "difficulty": [
+        3,
+        4
+      ],
+      "need_alternative": true
+    },
+    {
+      "rhythm": "Yıldız hedefi",
+      "template_id": "star_01",
+      "blocked": 0.15,
+      "pois": 1,
+      "slack": 3,
+      "spare_straight": 1,
+      "spare_corner": 1,
+      "min_moves": [
+        7,
+        11
+      ],
+      "difficulty": [
+        3,
+        5
+      ]
+    },
+    {
+      "rhythm": "Rahatlama",
+      "template_id": "relax_01",
+      "blocked": 0.04,
+      "pois": 0,
+      "slack": 6,
+      "spare_straight": 2,
+      "spare_corner": 2,
+      "min_moves": [
+        4,
+        7
+      ],
+      "difficulty": [
+        1,
+        2
+      ]
+    },
+    {
+      "rhythm": "Hamle baskısı",
+      "template_id": "press_01",
+      "blocked": 0.15,
+      "pois": 0,
+      "slack": 2,
+      "spare_straight": 1,
+      "spare_corner": 1,
+      "min_moves": [
+        8,
+        11
+      ],
+      "difficulty": [
+        4,
+        5
+      ]
+    },
+    {
+      "rhythm": "Hamle baskısı",
+      "template_id": "press_02",
+      "blocked": 0.18,
+      "pois": 0,
+      "slack": 2,
+      "spare_straight": 1,
+      "spare_corner": 0,
+      "min_moves": [
+        10,
+        14
+      ],
+      "difficulty": [
+        4,
+        6
+      ]
+    },
+    {
+      "rhythm": "Hamle baskısı",
+      "template_id": "press_03",
+      "blocked": 0.12,
+      "pois": 2,
+      "slack": 3,
+      "spare_straight": 1,
+      "spare_corner": 1,
+      "min_moves": [
+        8,
+        13
+      ],
+      "difficulty": [
+        4,
+        6
+      ]
+    },
+    {
+      "rhythm": "Final provası",
+      "template_id": "final_prep_01",
+      "blocked": 0.2,
+      "pois": 1,
+      "slack": 3,
+      "spare_straight": 1,
+      "spare_corner": 1,
+      "min_moves": [
+        8,
+        12
+      ],
+      "difficulty": [
+        4,
+        6
+      ]
+    },
+    {
+      "rhythm": "Zor bölüm",
+      "template_id": "hard_01",
+      "blocked": 0.22,
+      "pois": 1,
+      "slack": 2,
+      "spare_straight": 0,
+      "spare_corner": 1,
+      "min_moves": [
+        9,
+        14
+      ],
+      "difficulty": [
+        5,
+        7
+      ],
+      "need_alternative": true
+    },
+    {
+      "rhythm": "Fasıl finali",
+      "template_id": "final_02",
+      "blocked": 0.15,
+      "pois": 2,
+      "slack": 3,
+      "spare_straight": 1,
+      "spare_corner": 1,
+      "min_moves": [
+        8,
+        13
+      ],
+      "difficulty": [
+        5,
+        8
+      ],
+      "need_alternative": true,
+      "tries": 1500
+    }
+  ]
+}

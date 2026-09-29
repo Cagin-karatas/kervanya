@@ -252,7 +252,7 @@ func run_full() -> void:
 		check(board.model.is_complete(), "bölüm %d dokunuşlarla tamamlandı" % (i + 1))
 		if i == 0 or i == 7:
 			await shot("03_bolum%d_tamam" % (i + 1))
-		if not await wait_scene("ResultScreen"):
+		if not await through_journey(i == 0):
 			return
 		var r: Dictionary = gs().last_result
 		check(r.get("won", false) and r.get("stars", 0) == 3, "bölüm %d: kazanıldı, 3 yıldız (yıldız=%s, hamle=%d)" % [i + 1, r.get("stars"), used])
@@ -265,6 +265,9 @@ func run_full() -> void:
 	check(find_button(t("NEXT")) == null, "son bölümde 'sonraki' yok")
 	await shot("05_sonuc_son_bolum")
 	check(int(gs().data["last_completed_level"]) == n_levels, "kayıtta tüm bölümler bitti")
+	var gold := int(gs().data["currencies"].get("gold", 0))
+	notes.append("toplam altın: %d, ticaret malı: %d" % [gold, int(gs().data["currencies"].get("trade_goods", 0))])
+	check(gold >= n_levels * 15, "bölüm ödülleri altına eklendi (%d)" % gold)
 	await tap_button(t("MENU"))
 	await wait_scene("LevelSelect")
 	var all_open := true
@@ -298,7 +301,7 @@ func run_full() -> void:
 	await shot("08_ipucu")
 	await play_solution(board)
 	check(board.model.is_complete(), "ipucuyla bölüm 5 tamamlandı")
-	await wait_scene("ResultScreen")
+	await through_journey(false)
 
 	# --- Türkçe
 	await tap_button(t("MENU"))
@@ -330,7 +333,8 @@ func run_full() -> void:
 	for e in evs:
 		counts[e["event"]] = int(counts.get(e["event"], 0)) + 1
 	notes.append("kaydedilen olaylar: %s" % JSON.stringify(counts))
-	check(int(counts.get("level_complete", 0)) == 11, "10 bölüm + bölüm 5 tekrarı = 11 level_complete")
+	check(int(counts.get("level_complete", 0)) == gs().level_count() + 1, "tüm bölümler + bölüm 5 tekrarı kadar level_complete")
+	check(int(counts.get("journey_complete", 0)) == int(counts.get("level_complete", 0)), "her kazanılan bölümden sonra yolculuk")
 	check(int(counts.get("level_fail", 0)) == 3, "3 level_fail")
 	check(counts.has("tile_placed") and counts.has("tile_rotated") and counts.has("tile_undo") and counts.has("level_restart") and counts.has("level_quit") and counts.has("assist_triggered") and counts.has("tutorial_complete"), "beklenen olay türleri kaydedildi")
 	var title: Control = null
@@ -450,7 +454,7 @@ func run_editor() -> void:
 	check(FileAccess.file_exists(path) and gs().level_count() == n, "bölüm %d kaydedildi ve kataloğa eklendi" % n)
 	if FileAccess.file_exists(path):
 		var saved: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(path))
-		check(saved["level_id"] == "w1_c1_l%03d" % n and saved.has("solution"), "kayıtlı bölüm kimliği ve çözümü")
+		check(saved["level_id"] == "w%d_c%d_l%03d" % [(n - 1) / 100 + 1, ((n - 1) % 100) / 20 + 1, n] and saved.has("solution"), "kayıtlı bölüm kimliği ve çözümü")
 		DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
 		gs().load_levels()
 	# Yükle
@@ -500,3 +504,37 @@ func run_tutorial() -> void:
 	await drag_path(slot_pos(canvas, TileDefs.Type.STRAIGHT), drop_pos(canvas, board.level.start_cell), false)
 	await shot("t3_gecersiz_kare")
 	await touch(drop_pos(canvas, board.level.start_cell), false)
+
+
+## Bulmaca kazanılınca açılan yolculuğu geçer: play=true ise gerçek kaydırmalarla taşlardan
+## kaçarak oynar, değilse "Atla" butonuna dokunur. Sonuç ekranını bekler.
+func through_journey(play: bool) -> bool:
+	if not await wait_scene("Journey"):
+		return false
+	var j: Node = current_scene
+	if play:
+		var shot_taken := false
+		var guard := 0
+		var swipes := 0
+		while is_instance_valid(j) and current_scene == j and not j.model.finished and guard < 4000:
+			var m: JourneyModel = j.model
+			for it in m.items:
+				if it["done"] or it["kind"] != "rock":
+					continue
+				if it["y"] - m.distance < 1.3 and it["lane"] == m.lane:
+					var dir := 1 if m.lane < JourneyModel.LANES - 1 else -1
+					var c: Vector2 = j.view.get_global_transform() * (j.view.size / 2.0)
+					await drag_path(c, c + Vector2(dir * 220, 0), true, 4)
+					swipes += 1
+				break
+			if not shot_taken and is_instance_valid(j) and j.model.progress() > 0.4:
+				await shot("12_yolculuk")
+				shot_taken = true
+			await process_frame
+			guard += 1
+		var res: Dictionary = gs().last_result.get("journey", {})
+		notes.append("yolculuk: %s, kaydırma: %d" % [JSON.stringify(res), swipes])
+		check(res.get("hits", 99) == 0 and res.get("completed", false), "yolculuk kaydırmalarla çarpmadan bitti")
+	else:
+		await tap_button(t("SKIP"))
+	return await wait_scene("ResultScreen", 400)

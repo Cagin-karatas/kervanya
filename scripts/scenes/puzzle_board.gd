@@ -140,6 +140,9 @@ func _finish(won: bool) -> void:
 	await get_tree().create_timer(END_DELAY).timeout
 	if won:
 		GameState.record_win(level_index, model.moves_used)
+		if ProjectSettings.get_setting("kervanya/journey", true):
+			SceneRouter.goto_journey()
+			return
 	else:
 		GameState.record_fail(level_index, model.moves_used)
 	SceneRouter.goto_result()
