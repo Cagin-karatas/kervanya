@@ -46,6 +46,11 @@ func _ready() -> void:
 	canvas.show_hint = not _is_test and GameState.fail_count(level_index) >= level.assist_after_fail_count
 	box.add_child(canvas)
 	canvas.setup(model)
+	match level.tutorial_key:
+		"TUT_DRAG":
+			canvas.tutorial_mode = "drag"
+		"TUT_ROTATE":
+			canvas.tutorial_mode = "rotate"
 	canvas.board_changed.connect(_on_board_changed)
 	canvas.rejected.connect(_on_rejected)
 
@@ -143,6 +148,9 @@ func _finish(won: bool) -> void:
 func _on_rejected(reason: String) -> void:
 	if reason == "no_moves":
 		info_label.text = tr("NO_MOVES")
+	elif reason == "tap_tray":
+		info_label.text = tr("TAP_TRAY")
+		return
 	var tw := create_tween()
 	moves_label.modulate = Color(1, 0.4, 0.4)
 	tw.tween_property(moves_label, "modulate", Color.WHITE, 0.4)

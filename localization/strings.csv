@@ -18,3 +18,4 @@ TUT_BLOCKED,"Grey squares are closed. Moves are limited!","Koyu kareler kapalı.
 TUT_POI,The blue market must be on your route too.,Mavi pazar da rotanın üzerinde olmalı.
 HINT_SHOWN,Hint: follow the faint road.,İpucu: soluk yolu takip et.
 NO_MOVES,No moves left,Hamle kalmadı
+TAP_TRAY,"Press and hold a piece, then drag it onto the board.","Parçayı basılı tut ve tahtaya sürükle."

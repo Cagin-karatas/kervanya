@@ -33,6 +33,13 @@ var _slot_rects: Dictionary = {}  # type -> Rect2
 var _press: Dictionary = {}
 var _drag: Dictionary = {}
 
+## Öğretim ipuçları: "drag" = tahta boşken tepsiden kareye giden el animasyonu,
+## "rotate" = yanlış yöne bakan parçada "dokun ve döndür" halkası (ilk döndürmeye kadar).
+var tutorial_mode := ""
+var _rotated_once := false
+var _hint_until_ms := 0
+const HINT_CYCLE_MS := 1600
+
 
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_STOP
@@ -42,6 +49,9 @@ func _ready() -> void:
 
 func setup(p_model: BoardModel) -> void:
 	model = p_model
+	model.acted.connect(func(kind: String) -> void:
+		if kind == "rotate":
+			_rotated_once = true)
 	_layout()
 	queue_redraw()
 
@@ -160,7 +170,11 @@ func _on_release(pos: Vector2) -> void:
 	if not _drag.is_empty():
 		var target := cell_at(pos + ghost_offset())
 		if _drag["source"] == "tray":
-			if target.x >= 0:
+			if target.x < 0 and pos.distance_to(_press.get("start", pos)) < _cell * 0.25:
+				# Tepsiye sadece dokunuldu: sürüklemeyi göster.
+				rejected.emit("tap_tray")
+				play_drag_hint(2)
+			elif target.x >= 0:
 				changed = model.place_from_tray(_drag["type"], target)
 				if not changed:
 					rejected.emit("no_moves" if model.moves_left() <= 0 else "invalid_cell")
@@ -183,6 +197,7 @@ func _on_release(pos: Vector2) -> void:
 			rejected.emit("no_moves")
 	cancel_interaction()
 	if changed:
+		_hint_until_ms = 0
 		board_changed.emit()
 
 
@@ -229,6 +244,7 @@ func _draw() -> void:
 		_draw_hub(p, COL_POI, "poi", connected.has(p))
 
 	_draw_tray()
+	_draw_tutorial()
 
 	if not _drag.is_empty():
 		var gpos: Vector2 = _drag["pos"] + ghost_offset()
@@ -238,6 +254,11 @@ func _draw() -> void:
 		if target.x >= 0 and target != drag_from:
 			var ok := model.can_place(target) and model.moves_left() > 0
 			draw_rect(cell_rect(target).grow(-3.0), COL_OK if ok else COL_BAD)
+			if not ok:
+				# Geçersiz kare yalnız renkle değil, çarpı işaretiyle de gösterilir.
+				var k := cell_rect(target).grow(-_cell * 0.3)
+				draw_line(k.position, k.end, Color(0.55, 0.1, 0.1), 7.0)
+				draw_line(Vector2(k.end.x, k.position.y), Vector2(k.position.x, k.end.y), Color(0.55, 0.1, 0.1), 7.0)
 			if ok:
 				ghost_rot = model.best_rotation(_drag["type"], target, drag_from)
 		var ghost := Rect2(gpos - Vector2(_cell, _cell) * 0.5, Vector2(_cell, _cell))
@@ -292,3 +313,82 @@ func _draw_tray() -> void:
 		var text_pos := Vector2(icon.end.x + 20.0, r.get_center().y + 22.0)
 		draw_string(font, text_pos, "× %d" % shown, HORIZONTAL_ALIGNMENT_LEFT, -1, 64,
 				UiKit.TEXT if shown > 0 else UiKit.MUTED)
+
+
+# ---------------------------------------------------------------- öğretim ipuçları
+
+func play_drag_hint(cycles: int = 2) -> void:
+	_hint_until_ms = Time.get_ticks_msec() + cycles * HINT_CYCLE_MS
+	queue_redraw()
+
+
+func _process(_delta: float) -> void:
+	if model != null and (_drag_hint_active() or _rotate_hint_cell().x >= 0):
+		queue_redraw()
+
+
+func _drag_hint_active() -> bool:
+	if model == null or input_locked or not _drag.is_empty() or model.is_finished():
+		return false
+	if Time.get_ticks_msec() < _hint_until_ms:
+		return true
+	return tutorial_mode == "drag" and model.tiles.is_empty()
+
+
+## Öğretilecek hedef: çözümde olup henüz doğru yerleşmemiş ilk kare ve türü.
+func _next_hint_step() -> Dictionary:
+	for h in hint:
+		var hc: Vector2i = h["cell"]
+		if model.cell_mask(hc) == TileDefs.mask_of(h["type"], h["rot"]):
+			continue
+		if model.has_tile(hc) or model.tray_count(h["type"]) <= 0:
+			continue
+		return h
+	return {}
+
+
+func _rotate_hint_cell() -> Vector2i:
+	if tutorial_mode != "rotate" or _rotated_once or model.is_finished() or not _drag.is_empty():
+		return Vector2i(-1, -1)
+	for h in hint:
+		var hc: Vector2i = h["cell"]
+		if model.has_tile(hc) and model.tiles[hc]["type"] == h["type"] \
+				and model.cell_mask(hc) != TileDefs.mask_of(h["type"], h["rot"]):
+			return hc
+	return Vector2i(-1, -1)
+
+
+func _draw_tutorial() -> void:
+	var now := Time.get_ticks_msec()
+	if _drag_hint_active():
+		var step := _next_hint_step()
+		if not step.is_empty():
+			var t := float(now % HINT_CYCLE_MS) / HINT_CYCLE_MS
+			var a: Vector2 = _slot_rects[step["type"]].get_center()
+			var b: Vector2 = cell_rect(step["cell"]).get_center()
+			var k := smoothstep(0.15, 0.75, t)
+			var pos := a.lerp(b, k)
+			var alpha := clampf(minf(t / 0.1, (1.0 - t) / 0.15), 0.0, 1.0)
+			var r := Rect2(pos - Vector2(_cell, _cell) * 0.45, Vector2(_cell, _cell) * 0.9)
+			draw_rect(r, Color(1, 1, 1, 0.3 * alpha))
+			_draw_road(r, TileDefs.mask_of(step["type"], step["rot"]), Color(COL_ROAD_ON, 0.8 * alpha))
+			# Parmak: parçanın biraz altında içi boş daire
+			var finger := pos + Vector2(_cell * 0.25, _cell * 0.45)
+			draw_circle(finger, _cell * 0.16, Color(1, 1, 1, 0.55 * alpha))
+			draw_arc(finger, _cell * 0.16, 0, TAU, 32, Color(0.2, 0.18, 0.16, 0.8 * alpha), 4.0)
+	var rc := _rotate_hint_cell()
+	if rc.x >= 0:
+		var c := cell_rect(rc).get_center()
+		var pulse := 0.5 + 0.5 * sin(now / 180.0)
+		draw_arc(c, _cell * (0.44 + 0.04 * pulse), 0, TAU, 48, Color(COL_POI, 0.55 + 0.4 * pulse), 8.0)
+		# Saat yönünde dönen ok (gölgeli, kare içinde)
+		var rad := _cell * 0.26
+		var a0 := -PI * 0.85 + pulse * 0.3
+		var a1 := PI * 0.35 + pulse * 0.3
+		draw_arc(c, rad, a0, a1, 24, Color(0, 0, 0, 0.45), 11.0)
+		draw_arc(c, rad, a0, a1, 24, Color.WHITE, 7.0)
+		var tip := c + Vector2(cos(a1), sin(a1)) * rad
+		var tangent := Vector2(-sin(a1), cos(a1))
+		var normal := Vector2(cos(a1), sin(a1))
+		var head := PackedVector2Array([tip + tangent * 16.0, tip - normal * 12.0, tip + normal * 12.0])
+		draw_colored_polygon(head, Color.WHITE)

@@ -39,6 +39,8 @@ func _main() -> void:
 			await run_layout()
 		"editor":
 			await run_editor()
+		"tutorial":
+			await run_tutorial()
 	print("\nSONUÇ [%s] %d geçti, %d başarısız" % [mode, passed, failed])
 	for n in notes:
 		print("  not: " + n)
@@ -456,3 +458,45 @@ func run_editor() -> void:
 	await tap_button("Yükle")
 	check(ed.status.text.begins_with("Bölüm 8 yüklendi") and gs().editor_draft["level_id"] == "w1_c1_l008", "bölüm 8 yüklendi")
 	await shot("e5_editor_yukle")
+
+
+func run_tutorial() -> void:
+	gs().current_level_index = 0
+	change_scene_to_file("res://scenes/puzzle_board.tscn")
+	await wait_scene("PuzzleBoard")
+	var board: Node = current_scene
+	var canvas: PuzzleCanvas = board.canvas
+	check(canvas.tutorial_mode == "drag" and canvas._drag_hint_active(), "bölüm 1: sürükleme ipucu açık")
+	await create_timer(0.7).timeout
+	await shot("t1_surukleme_ipucu")
+	# Tepsiye sadece dokunma
+	await tap(slot_pos(canvas, TileDefs.Type.STRAIGHT))
+	check(board.info_label.text == t("TAP_TRAY"), "tepsiye dokununca yönlendirme: %s" % board.info_label.text)
+	check(board.model.tiles.is_empty(), "dokunma parça yerleştirmedi")
+	var p0: Dictionary = board.level.solution[0]
+	await drag_path(slot_pos(canvas, p0["type"]), drop_pos(canvas, p0["cell"]))
+	check(not board.model.tiles.is_empty() and not canvas._drag_hint_active(), "ilk yerleştirmeden sonra ipucu kapanır")
+	# Bölüm 2: döndürme ipucu
+	gs().current_level_index = 1
+	change_scene_to_file("res://scenes/puzzle_board.tscn")
+	await frames(2)
+	await wait_scene("PuzzleBoard")
+	board = current_scene
+	canvas = board.canvas
+	check(canvas.tutorial_mode == "rotate" and canvas._rotate_hint_cell().x < 0, "bölüm 2: yanlış parça yokken döndürme ipucu yok")
+	var corner: Dictionary = {}
+	for h in board.level.solution:
+		if h["type"] == TileDefs.Type.CORNER:
+			corner = h
+	await drag_path(slot_pos(canvas, corner["type"]), drop_pos(canvas, corner["cell"]))
+	var c: Vector2i = corner["cell"]
+	board.model.tiles[c]["rot"] = (int(corner["rot"]) + 1) % 4  # testte yanlış yöne çevir
+	await frames(2)
+	check(canvas._rotate_hint_cell() == c, "yanlış yöndeki parçada döndürme ipucu")
+	await shot("t2_dondurme_ipucu")
+	await tap(cell_pos(canvas, c))
+	check(canvas._rotate_hint_cell().x < 0, "ilk döndürmeden sonra ipucu kapanır")
+	# Geçersiz kare işareti
+	await drag_path(slot_pos(canvas, TileDefs.Type.STRAIGHT), drop_pos(canvas, board.level.start_cell), false)
+	await shot("t3_gecersiz_kare")
+	await touch(drop_pos(canvas, board.level.start_cell), false)
