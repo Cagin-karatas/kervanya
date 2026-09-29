@@ -1,6 +1,6 @@
 # Kervanya — Gri prototip (Kapı 1)
 
-Godot 4.5 ile dikey mobil yol bulmacası. Bu depo üretim planındaki **"Hemen başlama planı: İlk 7 gün"** kapsamının 1-6. günlerini içerir.
+Godot 4.7 ile dikey mobil yol bulmacası (iOS, Android, web).
 
 ## Durum
 
@@ -47,7 +47,7 @@ tools/             bake_levels.gd (solver ile hamle dengesi), screenshot_tour.gd
 
 ## Çalıştırma
 
-1. Godot 4.5+ kur (https://godotengine.org/download).
+1. Godot 4.7+ kur (https://godotengine.org/download).
 2. Godot → **Import** → bu klasördeki `project.godot`.
 3. **F5** ile çalıştır. Masaüstünde fare, telefonu taklit eder.
 

@@ -301,11 +301,11 @@ func test_analytics_log_and_privacy() -> void:
 			check(e.has(k), "ortak alan: " + k)
 	# Dönüşüm: büyük kayıt eski dosyaya taşınır, okunurken ikisi de gelir.
 	var f := FileAccess.open(an.log_path, FileAccess.WRITE)
-	f.store_string("x".repeat(an.MAX_BYTES + 10) + "\n")
+	f.store_string(JSON.stringify({"event": "pad", "pad": "x".repeat(an.MAX_BYTES + 10)}) + "\n")
 	f.close()
 	an.track("level_start", {"level_number": 2})
 	check(FileAccess.file_exists(an.old_log_path()), "büyük kayıt döndürüldü")
-	check(an.read_events().size() == 1, "bozuk satır atlanır, yeni olay okunur")
+	check(an.read_events().size() == 2, "eski ve yeni dosya birlikte okunur")
 	an.clear()
 	an.free()
 

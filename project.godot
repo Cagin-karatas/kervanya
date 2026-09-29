@@ -1,6 +1,16 @@
-; Kervanya - Godot 4.x proje dosyası
+; Engine configuration file.
+; It's best edited using the editor UI and not directly,
+; since the parameters that go here are not all obvious.
+;
+; Format:
+;   [section] ; section goes between []
+;   param=value ; assign values to parameters
 
 config_version=5
+
+[animation]
+
+compatibility/default_parent_skeleton_in_mesh_instance_3d=true
 
 [application]
 
@@ -8,9 +18,9 @@ config/name="Kervanya"
 config/description="Dikey mobil yol bulmacası - gri prototip"
 config/version="0.1.0"
 run/main_scene="res://scenes/boot.tscn"
-config/features=PackedStringArray("4.5", "GL Compatibility")
-config/icon="res://icon.svg"
 config/quit_on_go_back=false
+config/features=PackedStringArray("4.7", "GL Compatibility")
+config/icon="res://icon.svg"
 
 [autoload]
 
@@ -18,10 +28,6 @@ SaveManager="*res://scripts/autoload/save_manager.gd"
 GameState="*res://scripts/autoload/game_state.gd"
 SceneRouter="*res://scripts/autoload/scene_router.gd"
 AnalyticsService="*res://scripts/autoload/analytics_service.gd"
-
-[kervanya]
-
-test_tools=true
 
 [display]
 
@@ -33,18 +39,21 @@ window/stretch/mode="canvas_items"
 window/stretch/aspect="expand"
 window/handheld/orientation=1
 
+[dotnet]
+
+project/assembly_name="Kervanya"
+
 [gui]
 
 theme/default_font_size=40
 
-[input_devices]
-
-pointing/emulate_mouse_from_touch=true
-
 [internationalization]
 
 locale/translations=PackedStringArray("res://localization/strings.en.translation", "res://localization/strings.tr.translation")
-locale/fallback="en"
+
+[kervanya]
+
+test_tools=true
 
 [rendering]
 
