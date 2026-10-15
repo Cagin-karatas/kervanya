@@ -33,7 +33,8 @@ func _initialize() -> void:
 			tries += 1
 			var r := LevelBaker.generate(seed, gw, gh, {
 				"blocked": ls["blocked"], "pois": ls["pois"], "move_slack": ls["slack"],
-				"spare_straight": ls["spare_straight"], "spare_corner": ls["spare_corner"]})
+				"spare_straight": ls["spare_straight"], "spare_corner": ls["spare_corner"],
+				"junction": ls.get("junction", false), "spare_junction": ls.get("spare_junction", 0)})
 			if not r["ok"]:
 				why["üretilemedi"] += 1
 				continue
@@ -45,12 +46,16 @@ func _initialize() -> void:
 			if diff < ls["difficulty"][0] or diff > ls["difficulty"][1]:
 				why["zorluk"] += 1
 				continue
+			if ls.get("need_junction", false) and int(d["tile_pool"].get("junction", 0)) == 0:
+				why["kavşak yok"] = int(why.get("kavşak yok", 0)) + 1
+				continue
 			if ls.get("need_alternative", false) and not LevelBaker.has_alternative(d):
 				why["alternatif yok"] += 1
 				continue
 			d["difficulty_score"] = diff
 			d["rhythm"] = ls["rhythm"]
 			d["template_id"] = ls["template_id"]
+			d["tutorial_key"] = ls.get("tutorial_key", "")
 			d["world_id"] = (n - 1) / 100 + 1
 			d["chapter_id"] = ((n - 1) % 100) / 20 + 1
 			d["level_id"] = "w%d_c%d_l%03d" % [d["world_id"], d["chapter_id"], n]

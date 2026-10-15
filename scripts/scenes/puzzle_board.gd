@@ -51,6 +51,8 @@ func _ready() -> void:
 			canvas.tutorial_mode = "drag"
 		"TUT_ROTATE":
 			canvas.tutorial_mode = "rotate"
+		"TUT_JUNCTION":
+			canvas.tutorial_mode = "junction"
 	canvas.board_changed.connect(_on_board_changed)
 	canvas.rejected.connect(_on_rejected)
 

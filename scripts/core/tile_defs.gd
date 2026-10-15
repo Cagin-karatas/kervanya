@@ -3,7 +3,7 @@ extends RefCounted
 ## Yol parçası tanımları ve yön bit maskeleri.
 ## Yönler: N=1, E=2, S=4, W=8. Döndürme her zaman saat yönünde 90 derecedir.
 
-enum Type { STRAIGHT = 0, CORNER = 1 }
+enum Type { STRAIGHT = 0, CORNER = 1, JUNCTION = 2 }
 
 const N := 1
 const E := 2
@@ -15,11 +15,13 @@ const DIRS: Array[int] = [N, E, S, W]
 const BASE_MASK := {
 	Type.STRAIGHT: N | S,
 	Type.CORNER: N | E,
+	Type.JUNCTION: N | E | S,
 }
 
 const TYPE_NAMES := {
 	Type.STRAIGHT: "straight",
 	Type.CORNER: "corner",
+	Type.JUNCTION: "junction",
 }
 
 
@@ -76,6 +78,8 @@ static func type_for_mask(mask: int) -> int:
 	for r in range(4):
 		if mask_of(Type.CORNER, r) == mask:
 			return Type.CORNER
+		if mask_of(Type.JUNCTION, r) == mask:
+			return Type.JUNCTION
 	return -1
 
 

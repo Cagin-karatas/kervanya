@@ -1,5 +1,5 @@
 {
-  "comment": "Dünya 1 / Fasıl 1 (Taş Vadi), bölüm 11-20. Plan Ek B ritmi. tools/make_levels.gd ile üretilir.",
+  "comment": "Dünya 1 / Fasıl 1 (Taş Vadi), bölüm 11-20. Plan Ek B ritmi; kavşak 12. bölümde öğretilir. tools/make_levels.gd ile üretilir.",
   "start_number": 11,
   "grid": [
     6,
@@ -26,22 +26,26 @@
       "need_alternative": true
     },
     {
-      "rhythm": "Alternatif çözüm",
-      "template_id": "alt_02",
-      "blocked": 0.12,
+      "rhythm": "Öğretim: kavşak",
+      "template_id": "junction_01",
+      "blocked": 0.08,
       "pois": 1,
-      "slack": 4,
+      "slack": 5,
       "spare_straight": 1,
       "spare_corner": 1,
       "min_moves": [
-        7,
-        11
+        5,
+        10
       ],
       "difficulty": [
-        3,
-        4
+        2,
+        5
       ],
-      "need_alternative": true
+      "need_alternative": false,
+      "junction": true,
+      "need_junction": true,
+      "tutorial_key": "TUT_JUNCTION",
+      "spare_junction": 0
     },
     {
       "rhythm": "Yıldız hedefi",
@@ -113,7 +117,7 @@
     },
     {
       "rhythm": "Hamle baskısı",
-      "template_id": "press_03",
+      "template_id": "junction_02",
       "blocked": 0.12,
       "pois": 2,
       "slack": 3,
@@ -126,7 +130,9 @@
       "difficulty": [
         4,
         6
-      ]
+      ],
+      "junction": true,
+      "need_junction": true
     },
     {
       "rhythm": "Final provası",
@@ -172,7 +178,7 @@
       "spare_straight": 1,
       "spare_corner": 1,
       "min_moves": [
-        8,
+        7,
         13
       ],
       "difficulty": [
@@ -180,7 +186,9 @@
         8
       ],
       "need_alternative": true,
-      "tries": 1500
+      "tries": 1500,
+      "junction": true,
+      "need_junction": true
     }
   ]
 }

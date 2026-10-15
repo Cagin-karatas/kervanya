@@ -77,7 +77,7 @@ static func generate(seed: int, w: int, h: int, opts: Dictionary = {}) -> Dictio
 			"level_id": "gen_%d" % seed, "content_version": 1, "world_id": 1, "chapter_id": 1,
 			"grid_width": w, "grid_height": h, "start_cell": [start.x, start.y], "goal_cell": [goal.x, goal.y],
 			"blocked_cells": blocked, "points_of_interest": pois,
-			"tile_pool": {"straight": w * h, "corner": w * h},
+			"tile_pool": {"straight": w * h, "corner": w * h, "junction": (w * h if opts.get("junction", false) else 0)},
 			"move_slack": int(opts.get("move_slack", 4)), "difficulty_score": 3,
 			"rhythm": "", "template_id": "gen", "tutorial_key": "", "assist_after_fail_count": 3,
 			"seed": seed,
@@ -85,13 +85,15 @@ static func generate(seed: int, w: int, h: int, opts: Dictionary = {}) -> Dictio
 		var first := bake(d)
 		if not first["ok"]:
 			continue
-		var counts := {"straight": 0, "corner": 0}
+		var counts := {"straight": 0, "corner": 0, "junction": 0}
 		for p in first["data"]["solution"]:
 			counts[p["type"]] += 1
 		d["tile_pool"] = {
 			"straight": counts["straight"] + int(opts.get("spare_straight", 1)),
 			"corner": counts["corner"] + int(opts.get("spare_corner", 1)),
 		}
+		if counts["junction"] > 0:
+			d["tile_pool"]["junction"] = counts["junction"] + int(opts.get("spare_junction", 0))
 		var final := bake(d)
 		if final["ok"]:
 			return final

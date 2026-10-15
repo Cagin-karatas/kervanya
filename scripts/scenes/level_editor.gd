@@ -62,7 +62,7 @@ func _ready() -> void:
 	params.add_theme_constant_override("h_separation", 10)
 	params.add_theme_constant_override("v_separation", 8)
 	for p in [["Genişlik", "w", 3, 10], ["Yükseklik", "h", 3, 10], ["Zorluk", "difficulty", 1, 10],
-			["Düz", "straight", 0, 40], ["Köşe", "corner", 0, 40], ["Hamle payı", "slack", 0, 20],
+			["Düz", "straight", 0, 40], ["Köşe", "corner", 0, 40], ["Kavşak", "junction", 0, 10], ["Hamle payı", "slack", 0, 20],
 			["Seed", "seed", 1, 999999], ["Kapalı %", "density", 0, 40], ["Pazar", "pois", 0, 3]]:
 		var l := UiKit.label(p[0], 28, UiKit.MUTED, HORIZONTAL_ALIGNMENT_RIGHT)
 		l.autowrap_mode = TextServer.AUTOWRAP_OFF
@@ -128,6 +128,7 @@ func _sync_spins_from_draft() -> void:
 	spins["h"].value = d["grid_height"]
 	spins["straight"].value = d["tile_pool"].get("straight", 0)
 	spins["corner"].value = d["tile_pool"].get("corner", 0)
+	spins["junction"].value = d["tile_pool"].get("junction", 0)
 	spins["slack"].value = d.get("move_slack", 4)
 	spins["difficulty"].value = d.get("difficulty_score", 1)
 	_syncing = false
@@ -141,7 +142,8 @@ func _on_param_changed() -> void:
 	var d := draft()
 	d["grid_width"] = int(spins["w"].value)
 	d["grid_height"] = int(spins["h"].value)
-	d["tile_pool"] = {"straight": int(spins["straight"].value), "corner": int(spins["corner"].value)}
+	d["tile_pool"] = {"straight": int(spins["straight"].value), "corner": int(spins["corner"].value),
+			"junction": int(spins["junction"].value)}
 	d["move_slack"] = int(spins["slack"].value)
 	d["difficulty_score"] = int(spins["difficulty"].value)
 	_clip_to_grid(d)
@@ -193,6 +195,7 @@ func _on_random() -> void:
 	var seed := int(spins["seed"].value)
 	var r := LevelBaker.generate(seed, int(spins["w"].value), int(spins["h"].value), {
 		"blocked": spins["density"].value / 100.0, "pois": int(spins["pois"].value),
+		"junction": spins["junction"].value > 0,
 		"move_slack": int(spins["slack"].value)})
 	if not r["ok"]:
 		status.text = "Seed %d: %s" % [seed, "; ".join(r["errors"])]

@@ -6,54 +6,99 @@
   "grid_width": 6,
   "grid_height": 6,
   "start_cell": [
-    4,
+    5,
     5
   ],
   "goal_cell": [
-    0,
+    3,
     0
   ],
   "blocked_cells": [
     [
-      0,
+      2,
+      0
+    ],
+    [
+      5,
+      0
+    ],
+    [
+      4,
       1
     ],
     [
-      2,
+      5,
+      1
+    ],
+    [
+      3,
+      2
+    ],
+    [
+      5,
+      2
+    ],
+    [
+      5,
       3
+    ],
+    [
+      4,
+      4
+    ],
+    [
+      0,
+      5
+    ],
+    [
+      2,
+      5
     ]
   ],
   "points_of_interest": [
-    [
-      1,
-      3
-    ],
     [
       4,
       3
     ]
   ],
   "tile_pool": {
-    "straight": 5,
-    "corner": 5
+    "straight": 4,
+    "corner": 5,
+    "junction": 1
   },
   "move_slack": 3,
-  "difficulty_score": 5,
+  "difficulty_score": 6,
   "rhythm": "Hamle baskısı",
-  "template_id": "press_03",
+  "template_id": "junction_02",
   "tutorial_key": "",
   "assist_after_fail_count": 3,
-  "seed": 7107,
+  "seed": 7132,
   "minimum_solution_moves": 8,
-  "move_limit": 15,
+  "move_limit": 11,
   "star_thresholds": [
-    14,
-    15
+    10,
+    11
   ],
   "solution": [
     {
       "cell": [
         4,
+        5
+      ],
+      "type": "straight",
+      "rot": 1
+    },
+    {
+      "cell": [
+        3,
+        5
+      ],
+      "type": "corner",
+      "rot": 0
+    },
+    {
+      "cell": [
+        3,
         4
       ],
       "type": "straight",
@@ -64,36 +109,20 @@
         3,
         3
       ],
-      "type": "corner",
+      "type": "junction",
       "rot": 1
-    },
-    {
-      "cell": [
-        3,
-        4
-      ],
-      "type": "corner",
-      "rot": 3
     },
     {
       "cell": [
         2,
-        4
-      ],
-      "type": "straight",
-      "rot": 1
-    },
-    {
-      "cell": [
-        1,
-        4
+        3
       ],
       "type": "corner",
       "rot": 0
     },
     {
       "cell": [
-        1,
+        2,
         2
       ],
       "type": "straight",
@@ -101,19 +130,19 @@
     },
     {
       "cell": [
-        1,
+        2,
         1
       ],
-      "type": "straight",
-      "rot": 0
+      "type": "corner",
+      "rot": 1
     },
     {
       "cell": [
-        1,
-        0
+        3,
+        1
       ],
       "type": "corner",
-      "rot": 2
+      "rot": 3
     }
   ]
 }

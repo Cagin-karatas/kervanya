@@ -50,11 +50,11 @@
     "corner": 6.0
   },
   "move_slack": 3.0,
-  "move_limit": 18,
-  "minimum_solution_moves": 11,
+  "move_limit": 13,
+  "minimum_solution_moves": 10,
   "star_thresholds": [
-    17,
-    18
+    12,
+    13
   ],
   "difficulty_score": 4.0,
   "rhythm": "Orta final",
@@ -96,7 +96,7 @@
     },
     {
       "cell": [
-        5,
+        0,
         1
       ],
       "type": "straight",
@@ -104,15 +104,31 @@
     },
     {
       "cell": [
-        5,
+        0,
         2
       ],
-      "type": "straight",
+      "type": "corner",
       "rot": 0
     },
     {
       "cell": [
-        5,
+        1,
+        2
+      ],
+      "type": "straight",
+      "rot": 1
+    },
+    {
+      "cell": [
+        2,
+        2
+      ],
+      "type": "corner",
+      "rot": 2
+    },
+    {
+      "cell": [
+        2,
         3
       ],
       "type": "straight",
@@ -120,35 +136,11 @@
     },
     {
       "cell": [
-        5,
+        2,
         4
-      ],
-      "type": "corner",
-      "rot": 3
-    },
-    {
-      "cell": [
-        4,
-        4
-      ],
-      "type": "corner",
-      "rot": 1
-    },
-    {
-      "cell": [
-        4,
-        5
-      ],
-      "type": "corner",
-      "rot": 3
-    },
-    {
-      "cell": [
-        3,
-        5
       ],
       "type": "straight",
-      "rot": 1
+      "rot": 0
     }
   ]
 }

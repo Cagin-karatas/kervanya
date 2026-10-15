@@ -6,8 +6,8 @@
   "grid_width": 6,
   "grid_height": 6,
   "start_cell": [
-    3,
-    0
+    0,
+    4
   ],
   "goal_cell": [
     5,
@@ -15,35 +15,48 @@
   ],
   "blocked_cells": [
     [
+      4,
+      0
+    ],
+    [
+      2,
+      2
+    ],
+    [
+      4,
+      2
+    ],
+    [
+      2,
+      3
+    ],
+    [
+      5,
+      4
+    ],
+    [
       0,
-      1
+      5
     ],
     [
       1,
-      3
-    ],
-    [
-      4,
-      3
-    ],
-    [
-      4,
       5
     ]
   ],
   "points_of_interest": [
     [
-      1,
-      2
+      2,
+      1
     ],
     [
-      3,
-      3
+      4,
+      1
     ]
   ],
   "tile_pool": {
-    "straight": 4,
-    "corner": 6
+    "straight": 5,
+    "corner": 3,
+    "junction": 2
   },
   "move_slack": 3,
   "difficulty_score": 6,
@@ -51,77 +64,77 @@
   "template_id": "final_02",
   "tutorial_key": "",
   "assist_after_fail_count": 3,
-  "seed": 10100,
+  "seed": 10108,
   "minimum_solution_moves": 8,
-  "move_limit": 14,
+  "move_limit": 13,
   "star_thresholds": [
-    13,
-    14
+    12,
+    13
   ],
   "solution": [
     {
       "cell": [
-        3,
-        1
-      ],
-      "type": "corner",
-      "rot": 3
-    },
-    {
-      "cell": [
-        2,
-        1
-      ],
-      "type": "straight",
-      "rot": 1
-    },
-    {
-      "cell": [
         1,
-        1
-      ],
-      "type": "corner",
-      "rot": 1
-    },
-    {
-      "cell": [
-        2,
-        2
+        4
       ],
       "type": "straight",
       "rot": 1
     },
     {
       "cell": [
-        3,
-        2
+        2,
+        4
       ],
-      "type": "corner",
-      "rot": 2
+      "type": "straight",
+      "rot": 1
     },
     {
       "cell": [
         3,
         4
       ],
-      "type": "corner",
+      "type": "junction",
+      "rot": 3
+    },
+    {
+      "cell": [
+        3,
+        3
+      ],
+      "type": "straight",
       "rot": 0
+    },
+    {
+      "cell": [
+        3,
+        2
+      ],
+      "type": "straight",
+      "rot": 0
+    },
+    {
+      "cell": [
+        3,
+        1
+      ],
+      "type": "junction",
+      "rot": 1
     },
     {
       "cell": [
         4,
         4
       ],
-      "type": "straight",
-      "rot": 1
+      "type": "corner",
+      "rot": 2
     },
     {
       "cell": [
-        5,
-        4
+        4,
+        5
       ],
       "type": "corner",
-      "rot": 2
+      "rot": 0
     }
   ]
 }

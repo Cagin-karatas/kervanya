@@ -43,6 +43,8 @@ func _main() -> void:
 			await run_tutorial()
 		"town":
 			await run_town()
+		"junction":
+			await run_junction()
 	print("\nSONUÇ [%s] %d geçti, %d başarısız" % [mode, passed, failed])
 	for n in notes:
 		print("  not: " + n)
@@ -203,7 +205,7 @@ func run_full() -> void:
 
 	await drag_path(slot_pos(canvas, S), drop_pos(canvas, lvl.start_cell))
 	check(m.tray_count(S) == 3 and m.moves_used == 0, "başlangıç köyüne bırakma reddedilir")
-	await drag_path(slot_pos(canvas, S), slot_pos(canvas, TileDefs.Type.CORNER))
+	await drag_path(slot_pos(canvas, S), canvas.get_global_transform() * canvas._tray_rect.get_center() + Vector2(0, 60))
 	check(m.tray_count(S) == 3 and m.moves_used == 0, "tepsiye geri bırakma değişiklik yapmaz")
 	await drag_path(slot_pos(canvas, S), drop_pos(canvas, Vector2i(1, 1)))
 	check(m.has_tile(Vector2i(1, 1)) and m.tray_count(S) == 2 and m.moves_used == 1, "tepsiden yerleştirme")
@@ -590,3 +592,30 @@ func run_town() -> void:
 	notes.append("bölüm 1 tekrar: %d altın (önce %d, sonra %d)" % [r.get("gold_puzzle", 0), gold_before, int(d["currencies"]["gold"])])
 	await shot("k3_sonuc_bonus")
 	check(find_button(t("TOWN")) != null or find_button(t("TOWN") + "  !") != null, "sonuç ekranında kasaba butonu")
+
+
+func run_junction() -> void:
+	var idx := -1
+	for i in range(gs().level_count()):
+		if gs().levels[i].tutorial_key == "TUT_JUNCTION":
+			idx = i
+	check(idx >= 0, "kavşak öğretim bölümü bulundu")
+	gs().current_level_index = idx
+	change_scene_to_file("res://scenes/puzzle_board.tscn")
+	await wait_scene("PuzzleBoard")
+	var board: Node = current_scene
+	var canvas: PuzzleCanvas = board.canvas
+	check(canvas.tutorial_mode == "junction" and canvas._drag_hint_active(), "kavşak ipucu açık")
+	check(canvas._slot_rects.has(TileDefs.Type.JUNCTION), "tepside kavşak var")
+	await create_timer(0.8).timeout
+	await shot("j1_kavsak_ipucu")
+	await play_solution(board)
+	check(board.model.is_complete(), "bölüm %d (kavşak) dokunuşlarla çözüldü" % (idx + 1))
+	check(board.model.placed_count(TileDefs.Type.JUNCTION) >= 1, "kavşak yerleştirildi")
+	await shot("j2_kavsak_cozuldu")
+	# Kavşaksız bölümde tepside kavşak yuvası görünmez
+	gs().current_level_index = 0
+	change_scene_to_file("res://scenes/puzzle_board.tscn")
+	await frames(2)
+	await wait_scene("PuzzleBoard")
+	check(current_scene.canvas._slot_rects.size() == 1, "bölüm 1 tepsisinde yalnız düz parça")

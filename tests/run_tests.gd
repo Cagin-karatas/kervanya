@@ -31,6 +31,7 @@ func _initialize() -> void:
 		"test_economy",
 		"test_generated_levels_properties",
 		"test_town_model",
+		"test_junction",
 	]
 	for t in tests:
 		_current = t
@@ -522,3 +523,48 @@ func test_town_model() -> void:
 	# Yolculuk toleransı modele geçer
 	var jm := JourneyModel.new(1, 8, "easy", TownModel.journey_tolerance(save))
 	check(jm.max_hits == JourneyModel.MAX_HITS + TownModel.journey_tolerance(save), "kuyu toleransı yolculukta")
+
+
+func test_junction() -> void:
+	var TD := TileDefs
+	check(TD.mask_of(TD.Type.JUNCTION, 0) == TD.N | TD.E | TD.S, "kavşak 0: K-D-G")
+	check(TD.mask_of(TD.Type.JUNCTION, 1) == TD.E | TD.S | TD.W, "kavşak 1")
+	for r in range(4):
+		check(TD.type_for_mask(TD.mask_of(TD.Type.JUNCTION, r)) == TD.Type.JUNCTION, "kavşak maskesi tanınır %d" % r)
+	var base := {"level_id": "j", "grid_width": 5, "grid_height": 5, "start_cell": [0, 2], "goal_cell": [4, 2],
+			"points_of_interest": [[2, 0]], "blocked_cells": [], "move_limit": 99, "star_thresholds": [99, 99]}
+	var no_j := base.duplicate(true)
+	no_j["tile_pool"] = {"straight": 10, "corner": 10}
+	var with_j := base.duplicate(true)
+	with_j["tile_pool"] = {"straight": 10, "corner": 10, "junction": 1}
+	var a := RouteSolver.solve(LevelData.from_dict(no_j))
+	var b := RouteSolver.solve(LevelData.from_dict(with_j))
+	check(a["solvable"] and a["min_moves"] == 6, "kavşaksız en az 6 parça (%d)" % a["min_moves"])
+	check(b["solvable"] and b["min_moves"] == 4, "kavşakla 4 parça (%d)" % b["min_moves"])
+	var used_j := false
+	for p in b["placements"]:
+		used_j = used_j or p["type"] == TD.Type.JUNCTION
+	check(used_j, "çözüm kavşak kullanıyor")
+	# Oyunda: kavşaklı çözüm iki hedefi de bağlar
+	var l := LevelData.from_dict(with_j)
+	var m := BoardModel.new(l, 999)
+	for p in b["placements"]:
+		check(m.place_from_tray(p["type"], p["cell"]), "yerleşti %s" % p["cell"])
+		var g := 0
+		while m.cell_mask(p["cell"]) != TD.mask_of(p["type"], p["rot"]) and g < 4:
+			m.rotate_tile(p["cell"])
+			g += 1
+	check(m.is_complete(), "kavşaklı rota oyunda tamam")
+	check(m.tray_count(TD.Type.JUNCTION) == 0, "kavşak tepsiden düştü")
+	# Hub'dan dallanma: başlangıç iki yöne ayrılabilir (kavşak gerekmez)
+	var hub := {"level_id": "h", "grid_width": 5, "grid_height": 5, "start_cell": [2, 2], "goal_cell": [4, 2],
+			"points_of_interest": [[0, 2]], "blocked_cells": [], "tile_pool": {"straight": 4, "corner": 0},
+			"move_limit": 99, "star_thresholds": [99, 99]}
+	var h := RouteSolver.solve(LevelData.from_dict(hub))
+	check(h["solvable"] and h["min_moves"] == 2, "başlangıçtan iki yöne dallanma: 2 parça (%d)" % h["min_moves"])
+	# Seviye dosyalarında en az bir kavşak öğretim bölümü
+	var found := false
+	for lv in all_levels():
+		if lv.tutorial_key == "TUT_JUNCTION":
+			found = int(lv.tile_pool.get(TD.Type.JUNCTION, 0)) > 0
+	check(found, "kavşak öğretim bölümü var ve kavşak içeriyor")

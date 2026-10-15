@@ -21,6 +21,7 @@ Godot 4.7 ile dikey mobil yol bulmacası (iOS, Android, web).
 - Yerleşik parçayı başka kareye sürükle → **1 hamle**; tahta dışına/tepsiye sürükle → tepsiye döner, **0 hamle**.
 - **Geri al** son işlemi ve hamlesini iade eder. Hamle biterse bölüm kaybedilir.
 - Yeşil köy → kırmızı bayrak. Mavi pazar varsa o da rotada olmalı.
+- **Kavşak** (12. bölümde öğretilir) yolu ikiye ayırır: pazarı ve hedefi aynı anda bağlamak için. Köy ve pazarlar da her yöne açıktır, yol onlardan da dallanabilir.
 - Aynı bölümde 3 başarısızlıktan sonra soluk mavi çözüm yolu (gizli yardım) görünür.
 
 ## Kasaba (plan §4.3)

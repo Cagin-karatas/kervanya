@@ -51,3 +51,4 @@ R_TOWN_LEVEL,Upgrade the Caravanserai first,Önce Kervansaray'ı geliştir
 R_GOLD,Not enough gold,Yetersiz altın
 R_GOODS,Not enough goods,Yetersiz ticaret malı
 GOLD_BONUS,Market bonus: +%d%%,Pazar bonusu: +%%%d
+TUT_JUNCTION,"The junction splits the road in two: connect the market and the goal at once.","Kavşak yolu ikiye ayırır: pazarı ve hedefi aynı anda bağla."

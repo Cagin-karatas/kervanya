@@ -81,7 +81,13 @@ func _layout() -> void:
 	_origin = Vector2((size.x - board_size.x) / 2.0, (board_area.y - board_size.y) / 2.0)
 	_tray_rect = Rect2(0, size.y - tray_h, size.x, tray_h)
 	_slot_rects.clear()
-	var types := TileDefs.TYPE_NAMES.keys()
+	# Tepside yalnız bu bölümde bulunan parça türleri gösterilir.
+	var types: Array = []
+	for t in TileDefs.TYPE_NAMES:
+		if int(model.level.tile_pool.get(t, 0)) > 0:
+			types.append(t)
+	if types.is_empty():
+		types = [TileDefs.Type.STRAIGHT]
 	var slot_w := minf(size.x / types.size() - 24.0, 360.0)
 	var total := slot_w * types.size() + 24.0 * (types.size() - 1)
 	var x := (size.x - total) / 2.0
@@ -332,6 +338,8 @@ func _drag_hint_active() -> bool:
 		return false
 	if Time.get_ticks_msec() < _hint_until_ms:
 		return true
+	if tutorial_mode == "junction":
+		return model.placed_count(TileDefs.Type.JUNCTION) == 0
 	return tutorial_mode == "drag" and model.tiles.is_empty()
 
 
@@ -339,6 +347,8 @@ func _drag_hint_active() -> bool:
 func _next_hint_step() -> Dictionary:
 	for h in hint:
 		var hc: Vector2i = h["cell"]
+		if tutorial_mode == "junction" and h["type"] != TileDefs.Type.JUNCTION:
+			continue
 		if model.cell_mask(hc) == TileDefs.mask_of(h["type"], h["rot"]):
 			continue
 		if model.has_tile(hc) or model.tray_count(h["type"]) <= 0:
