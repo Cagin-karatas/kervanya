@@ -18,6 +18,8 @@ func _ready() -> void:
 	if won:
 		var gold: int = int(r.get("gold_puzzle", 0))
 		var lines := PackedStringArray([tr("GOLD_PUZZLE") % gold])
+		if int(r.get("gold_bonus_pct", 0)) > 0:
+			lines.append(tr("GOLD_BONUS") % int(r["gold_bonus_pct"]))
 		var j: Dictionary = r.get("journey", {})
 		if not j.is_empty():
 			gold += int(j.get("gold", 0))
@@ -34,6 +36,9 @@ func _ready() -> void:
 			box.add_child(UiKit.button(tr("NEXT"), SceneRouter.goto_level.bind(idx + 1), 140))
 		else:
 			box.add_child(UiKit.label(tr("ALL_DONE"), 52, UiKit.ACCENT))
+	if won:
+		var town_text := tr("TOWN") + ("  !" if TownModel.any_upgrade_available(GameState.data) else "")
+		box.add_child(UiKit.button(town_text, SceneRouter.goto_town, 140))
 	box.add_child(UiKit.button(tr("RETRY"), SceneRouter.goto_level.bind(idx), 140))
 	box.add_child(UiKit.button(tr("MENU"), SceneRouter.goto_menu, 140))
 

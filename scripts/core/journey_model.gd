@@ -6,7 +6,7 @@ extends RefCounted
 ## yalnız bonusu azaltır.
 
 const LANES := 3
-const MAX_HITS := 3
+const MAX_HITS := 3  # temel tolerans; Kuyu binası artırır
 const BOOST_TIME := 1.0
 const BOOST_FACTOR := 1.6
 
@@ -17,6 +17,7 @@ const DIFFICULTY := {
 }
 
 var difficulty := "easy"
+var max_hits := MAX_HITS
 var duration := 10.0
 var speed := 3.0
 var t := 0.0
@@ -33,7 +34,8 @@ var _boost_until := 0.0
 
 
 ## route_tiles: bulmacadaki rota uzunluğu (yolculuk süresi buna bağlı).
-func _init(seed: int, route_tiles: int, p_difficulty: String = "easy") -> void:
+func _init(seed: int, route_tiles: int, p_difficulty: String = "easy", extra_tolerance: int = 0) -> void:
+	max_hits = MAX_HITS + maxi(0, extra_tolerance)
 	difficulty = p_difficulty if DIFFICULTY.has(p_difficulty) else "easy"
 	var p: Dictionary = DIFFICULTY[difficulty]
 	duration = clampf(8.0 + route_tiles * 0.8, 10.0, 22.0)
@@ -107,7 +109,7 @@ func step(dt: float) -> Array[Dictionary]:
 			"rare":
 				rare += 1
 				events.append({"type": "rare", "lane": lane})
-	if t >= duration or hits >= MAX_HITS:
+	if t >= duration or hits >= max_hits:
 		finished = true
 	return events
 
@@ -120,7 +122,7 @@ func progress() -> float:
 func result() -> Dictionary:
 	return {
 		"hits": hits, "bonuses": bonuses, "rare": rare,
-		"completed": hits < MAX_HITS and not skipped, "skipped": skipped,
+		"completed": hits < max_hits and not skipped, "skipped": skipped,
 		"gold": maxi(0, bonuses * 2 - hits * 2), "trade_goods": rare,
 		"difficulty": difficulty,
 	}

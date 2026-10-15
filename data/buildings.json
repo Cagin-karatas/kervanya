@@ -1,0 +1,28 @@
+{
+  "comment": "Plan §4.3 ve §8 bina ekonomi tablosu. Seviye 0 = kurulmamış. cost[i] = i. seviyeden i+1'e geçiş bedeli.",
+  "buildings": [
+    {
+      "id": "kervansaray",
+      "unlock_level": 0,
+      "max_level": 3,
+      "cost": [{"gold": 20}, {"gold": 120, "trade_goods": 1}, {"gold": 300, "trade_goods": 3}],
+      "effect": "town_level"
+    },
+    {
+      "id": "pazar",
+      "unlock_level": 5,
+      "max_level": 3,
+      "cost": [{"gold": 40}, {"gold": 150, "trade_goods": 1}, {"gold": 350, "trade_goods": 3}],
+      "effect": "gold_bonus",
+      "values": [0, 10, 20, 30]
+    },
+    {
+      "id": "kuyu",
+      "unlock_level": 8,
+      "max_level": 3,
+      "cost": [{"gold": 30}, {"gold": 130, "trade_goods": 1}, {"gold": 320, "trade_goods": 2}],
+      "effect": "journey_tolerance",
+      "values": [0, 1, 1, 2]
+    }
+  ]
+}

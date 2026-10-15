@@ -30,3 +30,24 @@ GOLD_PUZZLE,Puzzle: +%d gold,Bulmaca: +%d altın
 GOLD_JOURNEY,"Journey: +%d gold (%d bonus, %d hits)","Yolculuk: +%d altın (%d bonus, %d çarpma)"
 TRADE_GOODS,Rare goods: +%d,Nadir mal: +%d
 GOLD_TOTAL,Total gold: %d,Toplam altın: %d
+TOWN,Town,Kasaba
+TOWN_LEVEL,Town level %d,Kasaba seviyesi %d
+GOLD_SHORT,%d gold,%d altın
+GOODS_SHORT,%d goods,%d mal
+B_KERVANSARAY,Caravanserai,Kervansaray
+B_PAZAR,Market,Pazar
+B_KUYU,Well,Kuyu
+B_KERVANSARAY_FX,Raises town level; other buildings can reach this level.,Kasaba seviyesini yükseltir; diğer binalar bu seviyeye kadar gelişebilir.
+B_PAZAR_FX,Puzzle gold +%d%%,Bulmaca altını +%%%d
+B_KUYU_FX,Journey: +%d extra hits,Yolculuk: +%d çarpma hakkı
+BUILD,Build,Kur
+UPGRADE,Upgrade,Geliştir
+LEVEL_X,Level %d/%d,Seviye %d/%d
+NOT_BUILT,Not built,Kurulmadı
+COST,Cost: %s,Bedel: %s
+R_LOCKED,Opens at level %d,%d. bölümde açılır
+R_MAX,Fully upgraded,Tam gelişti
+R_TOWN_LEVEL,Upgrade the Caravanserai first,Önce Kervansaray'ı geliştir
+R_GOLD,Not enough gold,Yetersiz altın
+R_GOODS,Not enough goods,Yetersiz ticaret malı
+GOLD_BONUS,Market bonus: +%d%%,Pazar bonusu: +%%%d

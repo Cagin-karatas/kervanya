@@ -30,6 +30,7 @@ func _initialize() -> void:
 		"test_journey_model",
 		"test_economy",
 		"test_generated_levels_properties",
+		"test_town_model",
 	]
 	for t in tests:
 		_current = t
@@ -428,7 +429,7 @@ func test_journey_model() -> void:
 	var idle := JourneyModel.new(7, 10, "hard")
 	while not idle.finished:
 		idle.step(1.0 / 60.0)
-	check(idle.hits > 0 and idle.hits <= JourneyModel.MAX_HITS, "hareketsiz oyuncu çarpar (%d)" % idle.hits)
+	check(idle.hits > 0 and idle.hits <= idle.max_hits, "hareketsiz oyuncu çarpar (%d)" % idle.hits)
 	# Mükemmel oyuncu hiç çarpmaz ve süre dolunca biter
 	for diff in ["easy", "medium", "hard"]:
 		var m := JourneyModel.new(99, 10, diff)
@@ -485,3 +486,39 @@ func test_generated_levels_properties() -> void:
 		var regen := LevelBaker.generate(int(raw["seed"]), int(raw["grid_width"]), int(raw["grid_height"]), {
 			"blocked": 0.0, "pois": 0})
 		check(regen["ok"], "bölüm %d seed yeniden üretilebilir" % (i + 1))
+
+
+func test_town_model() -> void:
+	var save := {"last_completed_level": 0, "currencies": {"gold": 0, "trade_goods": 0}, "building_levels": {}}
+	check(TownModel.defs().size() == 3, "üç bina tanımlı")
+	for b in TownModel.defs():
+		check(b["cost"].size() == int(b["max_level"]), "%s: her seviye için bedel" % b["id"])
+	check(TownModel.is_unlocked(save, "kervansaray"), "kervansaray ilk oturumda açık")
+	check(TownModel.block_reason(save, "kervansaray") == "gold", "altın yoksa kurulamaz")
+	check(TownModel.block_reason(save, "pazar") == "locked", "pazar 5. bölüme kadar kilitli")
+	# İlk anlamlı yükseltme yalnız bulmaca altınıyla: 2 bölüm (ilk tamamlanma) yetmeli
+	var l1 := LevelData.from_dict({"level_id": "a", "difficulty_score": 1})
+	var two_levels: int = 2 * load("res://scripts/autoload/game_state.gd").puzzle_gold(l1, true, 2, 0)
+	check(two_levels >= int(TownModel.next_cost(save, "kervansaray")["gold"]), "ilk bina 2 bölüm altınıyla kurulur (%d)" % two_levels)
+	save["currencies"]["gold"] = 1000
+	save["currencies"]["trade_goods"] = 10
+	check(TownModel.upgrade(save, "kervansaray") and TownModel.level_of(save, "kervansaray") == 1, "kervansaray kuruldu")
+	check(int(save["currencies"]["gold"]) == 980, "bedel düşüldü")
+	save["last_completed_level"] = 8
+	check(TownModel.upgrade(save, "pazar"), "pazar kuruldu")
+	check(TownModel.block_reason(save, "pazar") == "town_level", "pazar kervansaray seviyesini geçemez")
+	check(TownModel.gold_bonus_percent(save) == 10, "pazar 1: +%10")
+	check(TownModel.upgrade(save, "kuyu") and TownModel.journey_tolerance(save) == 1, "kuyu 1: +1 çarpma hakkı")
+	var before := JSON.stringify(save)
+	save["currencies"]["trade_goods"] = 0
+	check(TownModel.block_reason(save, "kervansaray") == "trade_goods" and not TownModel.upgrade(save, "kervansaray"), "ticaret malı yetmezse yükseltme yok")
+	save["currencies"]["trade_goods"] = 10
+	for i in range(5):
+		TownModel.upgrade(save, "kervansaray")
+	check(TownModel.level_of(save, "kervansaray") == 3 and TownModel.block_reason(save, "kervansaray") == "max", "en fazla 3. seviye")
+	save["currencies"]["gold"] = int(save["currencies"]["gold"]) + 1000
+	check(TownModel.upgrade(save, "pazar") and TownModel.upgrade(save, "pazar") and TownModel.gold_bonus_percent(save) == 30, "pazar 3: +%30")
+	check(int(save["currencies"]["gold"]) >= 0 and int(save["currencies"]["trade_goods"]) >= 0, "para birimi eksiye düşmez")
+	# Yolculuk toleransı modele geçer
+	var jm := JourneyModel.new(1, 8, "easy", TownModel.journey_tolerance(save))
+	check(jm.max_hits == JourneyModel.MAX_HITS + TownModel.journey_tolerance(save), "kuyu toleransı yolculukta")

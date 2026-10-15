@@ -21,7 +21,8 @@ func _ready() -> void:
 	var level: LevelData = GameState.levels[idx]
 	var seed := hash(level.level_id)
 	var diff := JourneyModel.difficulty_for(level, _level_number)
-	model = JourneyModel.new(seed, maxi(level.minimum_solution_moves, 3), diff)
+	model = JourneyModel.new(seed, maxi(level.minimum_solution_moves, 3), diff,
+			TownModel.journey_tolerance(GameState.data))
 
 	var box := UiKit.build_screen(self, 12)
 	var top := HBoxContainer.new()
@@ -78,7 +79,7 @@ func _process(delta: float) -> void:
 
 func _refresh() -> void:
 	progress.value = model.progress()
-	hits_label.text = tr("JOURNEY_HITS") % [model.hits, JourneyModel.MAX_HITS]
+	hits_label.text = tr("JOURNEY_HITS") % [model.hits, model.max_hits]
 	bonus_label.text = tr("JOURNEY_BONUS") % (model.bonuses + model.rare)
 
 
@@ -95,7 +96,7 @@ func _finish() -> void:
 			"bonuses": res["bonuses"], "completed": res["completed"], "skipped": res["skipped"],
 			"duration_ms": Time.get_ticks_msec() - _started_ms})
 	GameState.record_journey(res)
-	info_label.text = tr("JOURNEY_TIRED") if res["hits"] >= JourneyModel.MAX_HITS else tr("JOURNEY_DONE")
+	info_label.text = tr("JOURNEY_TIRED") if res["hits"] >= model.max_hits else tr("JOURNEY_DONE")
 	if res["skipped"]:
 		SceneRouter.goto_result()
 		return

@@ -15,6 +15,7 @@ const EVENTS := [
 	"tile_placed", "tile_rotated", "tile_moved", "tile_returned", "tile_undo",
 	"assist_triggered", "report_opened",
 	"journey_start", "journey_hit", "journey_complete",
+	"building_upgrade", "town_opened",
 ]
 
 var log_path := LOG_PATH

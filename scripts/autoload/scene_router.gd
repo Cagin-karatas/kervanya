@@ -7,6 +7,7 @@ const RESULT := "res://scenes/result_screen.tscn"
 const TEST_REPORT := "res://scenes/test_report.tscn"
 const LEVEL_EDITOR := "res://scenes/level_editor.tscn"
 const JOURNEY := "res://scenes/journey.tscn"
+const TOWN := "res://scenes/town.tscn"
 
 
 func goto_menu() -> void:
@@ -24,6 +25,10 @@ func goto_result() -> void:
 
 func goto_journey() -> void:
 	_change(JOURNEY)
+
+
+func goto_town() -> void:
+	_change(TOWN)
 
 
 func goto_test_report() -> void:

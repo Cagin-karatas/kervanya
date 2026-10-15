@@ -62,7 +62,9 @@ func record_win(index: int, moves_used: int) -> void:
 	var key := str(index + 1)
 	var level_stars: Dictionary = data["level_stars"]
 	var previous := int(level_stars.get(key, 0))
-	var gold := puzzle_gold(l, index + 1 > int(data["last_completed_level"]), stars, previous)
+	var base_gold := puzzle_gold(l, index + 1 > int(data["last_completed_level"]), stars, previous)
+	var bonus_pct := TownModel.gold_bonus_percent(data)
+	var gold := base_gold + int(round(base_gold * bonus_pct / 100.0))
 	_add_currency("gold", gold)
 	level_stars[key] = maxi(previous, stars)
 	data["last_completed_level"] = maxi(int(data["last_completed_level"]), index + 1)
@@ -71,6 +73,7 @@ func record_win(index: int, moves_used: int) -> void:
 	last_result = {
 		"level_index": index, "won": true, "stars": stars,
 		"moves_used": moves_used, "move_limit": l.move_limit, "gold_puzzle": gold,
+		"gold_bonus_pct": bonus_pct,
 	}
 
 
@@ -79,6 +82,16 @@ func record_journey(r: Dictionary) -> void:
 	_add_currency("trade_goods", int(r.get("trade_goods", 0)))
 	SaveManager.save_data(data)
 	last_result["journey"] = r
+
+
+func upgrade_building(id: String) -> bool:
+	var from := TownModel.level_of(data, id)
+	if not TownModel.upgrade(data, id):
+		return false
+	SaveManager.save_data(data)
+	AnalyticsService.track("building_upgrade", {"building": id, "level": from + 1,
+			"town_level": TownModel.town_level(data)})
+	return true
 
 
 func _add_currency(key: String, amount: int) -> void:

@@ -41,6 +41,8 @@ func _main() -> void:
 			await run_editor()
 		"tutorial":
 			await run_tutorial()
+		"town":
+			await run_town()
 	print("\nSONUÇ [%s] %d geçti, %d başarısız" % [mode, passed, failed])
 	for n in notes:
 		print("  not: " + n)
@@ -538,3 +540,53 @@ func through_journey(play: bool) -> bool:
 	else:
 		await tap_button(t("SKIP"))
 	return await wait_scene("ResultScreen", 400)
+
+
+func run_town() -> void:
+	var d: Dictionary = gs().data
+	d["currencies"] = {"gold": 25, "trade_goods": 0}
+	d["building_levels"] = {}
+	d["last_completed_level"] = 2
+	change_scene_to_file("res://scenes/level_select.tscn")
+	await wait_scene("LevelSelect")
+	check(find_button(t("TOWN") + "  !") != null, "menüde kasaba butonu, yükseltme işaretiyle")
+	await tap_button(t("TOWN") + "  !")
+	check(await wait_scene("Town"), "kasaba açıldı")
+	await shot("k1_kasaba_bos")
+	var town: Node = current_scene
+	check(not town._cards["pazar"]["button"].disabled == false, "pazar kilitli")
+	await tap(town._cards["kervansaray"]["button"].get_global_rect().get_center())
+	check(TownModel.level_of(d, "kervansaray") == 1 and int(d["currencies"]["gold"]) == 5, "dokunarak kervansaray kuruldu, 20 altın düştü")
+	check(town._cards["kervansaray"]["button"].disabled, "altın bitince geliştir kapalı")
+	# Kayıt kalıcı mı
+	var saved: Dictionary = root.get_node("SaveManager").load_data()
+	check(int(saved["building_levels"].get("kervansaray", 0)) == 1, "bina seviyesi kaydedildi")
+	# Zengin oyuncu: pazar ve kuyu açılır
+	d["currencies"] = {"gold": 900, "trade_goods": 5}
+	d["last_completed_level"] = 10
+	change_scene_to_file("res://scenes/town.tscn")
+	await frames(2)
+	await wait_scene("Town")
+	town = current_scene
+	await tap(town._cards["pazar"]["button"].get_global_rect().get_center())
+	await tap(town._cards["kuyu"]["button"].get_global_rect().get_center())
+	await tap(town._cards["kervansaray"]["button"].get_global_rect().get_center())
+	await tap(town._cards["pazar"]["button"].get_global_rect().get_center())
+	check(TownModel.level_of(d, "pazar") == 2 and TownModel.level_of(d, "kuyu") == 1 and TownModel.level_of(d, "kervansaray") == 2, "pazar 2, kuyu 1, kervansaray 2")
+	await create_timer(0.6).timeout
+	await shot("k2_kasaba_gelisti")
+	# Etkiler oyunda: bölüm 1'i oyna, pazar bonusu ve kuyu toleransı
+	var gold_before := int(d["currencies"]["gold"])
+	gs().current_level_index = 0
+	change_scene_to_file("res://scenes/puzzle_board.tscn")
+	await wait_scene("PuzzleBoard")
+	await play_solution(current_scene)
+	check(await wait_scene("Journey"), "yolculuk açıldı")
+	check(current_scene.model.max_hits == JourneyModel.MAX_HITS + 1, "kuyu: yolculukta +1 çarpma hakkı")
+	await tap_button(t("SKIP"))
+	await wait_scene("ResultScreen")
+	var r: Dictionary = gs().last_result
+	check(int(r.get("gold_bonus_pct", 0)) == 20, "pazar 2: +%20 bulmaca altını")
+	notes.append("bölüm 1 tekrar: %d altın (önce %d, sonra %d)" % [r.get("gold_puzzle", 0), gold_before, int(d["currencies"]["gold"])])
+	await shot("k3_sonuc_bonus")
+	check(find_button(t("TOWN")) != null or find_button(t("TOWN") + "  !") != null, "sonuç ekranında kasaba butonu")

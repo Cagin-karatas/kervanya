@@ -23,6 +23,18 @@ Godot 4.7 ile dikey mobil yol bulmacası (iOS, Android, web).
 - Yeşil köy → kırmızı bayrak. Mavi pazar varsa o da rotada olmalı.
 - Aynı bölümde 3 başarısızlıktan sonra soluk mavi çözüm yolu (gizli yardım) görünür.
 
+## Kasaba (plan §4.3)
+
+Menüde veya sonuç ekranında **Kasaba**. Bina tablosu `data/buildings.json` (bedel, açılma bölümü, etki):
+
+| Bina | Açılır | Etki |
+|---|---|---|
+| Kervansaray | baştan | Kasaba seviyesi; diğer binalar bu seviyeyi geçemez |
+| Pazar | 5. bölüm | Bulmaca altını +%10 / +%20 / +%30 |
+| Kuyu | 8. bölüm | Yolculukta +1 / +1 / +2 çarpma hakkı |
+
+İlk bina (Kervansaray, 20 altın) ilk iki bölümün altınıyla kurulur; reklam/ödeme gerekmez.
+
 ## Test kaydı (analitik)
 
 `AnalyticsService` üretim planı §10'daki olayları ortak alanlarıyla (`event_time`, `app_version`, `platform`,

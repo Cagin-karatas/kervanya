@@ -17,6 +17,19 @@ func _ready() -> void:
 		title.gui_input.connect(_on_title_input)
 	box.add_child(title)
 	box.add_child(UiKit.label(tr("MENU_SUBTITLE"), 36, UiKit.MUTED))
+	var bar := HBoxContainer.new()
+	bar.add_theme_constant_override("separation", 20)
+	var cur: Dictionary = GameState.data.get("currencies", {})
+	var wallet := UiKit.label("%s · %s" % [tr("GOLD_SHORT") % int(cur.get("gold", 0)),
+			tr("GOODS_SHORT") % int(cur.get("trade_goods", 0))], 36, UiKit.TEXT, HORIZONTAL_ALIGNMENT_LEFT)
+	wallet.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	bar.add_child(wallet)
+	var town_text := tr("TOWN") + ("  !" if TownModel.any_upgrade_available(GameState.data) else "")
+	var town := UiKit.button(town_text, SceneRouter.goto_town, 110)
+	town.size_flags_horizontal = Control.SIZE_FILL
+	town.custom_minimum_size.x = 300
+	bar.add_child(town)
+	box.add_child(bar)
 	var grid := GridContainer.new()
 	grid.columns = 4
 	grid.add_theme_constant_override("h_separation", 20)
