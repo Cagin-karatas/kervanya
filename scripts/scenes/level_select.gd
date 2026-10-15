@@ -29,7 +29,12 @@ func _ready() -> void:
 	town.size_flags_horizontal = Control.SIZE_FILL
 	town.custom_minimum_size.x = 300
 	bar.add_child(town)
+	var settings := UiKit.button(tr("SETTINGS"), SceneRouter.goto_settings, 110)
+	settings.size_flags_horizontal = Control.SIZE_FILL
+	settings.custom_minimum_size.x = 260
+	bar.add_child(settings)
 	box.add_child(bar)
+	AudioManager.play_music("town")
 	var grid := GridContainer.new()
 	grid.columns = 4
 	grid.add_theme_constant_override("h_separation", 20)

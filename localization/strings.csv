@@ -52,3 +52,13 @@ R_GOLD,Not enough gold,Yetersiz altın
 R_GOODS,Not enough goods,Yetersiz ticaret malı
 GOLD_BONUS,Market bonus: +%d%%,Pazar bonusu: +%%%d
 TUT_JUNCTION,"The junction splits the road in two: connect the market and the goal at once.","Kavşak yolu ikiye ayırır: pazarı ve hedefi aynı anda bağla."
+SETTINGS,Settings,Ayarlar
+MUSIC,Music,Müzik
+SFX,Sound effects,Ses efektleri
+VIBRATION,Vibration,Titreşim
+LANGUAGE,Language,Dil
+LANG_SYSTEM,System,Sistem
+LANG_TR,Türkçe,Türkçe
+LANG_EN,English,English
+ON,On,Açık
+OFF,Off,Kapalı

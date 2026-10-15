@@ -53,14 +53,19 @@ func _ready() -> void:
 	view = JourneyView.new()
 	view.model = model
 	view.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	view.swiped.connect(func(dir: int) -> void: model.move(dir))
-	view.tapped.connect(func() -> void: model.boost())
+	view.swiped.connect(func(dir: int) -> void:
+		model.move(dir)
+		AudioManager.play_sfx("journey_swipe", 0.08))
+	view.tapped.connect(func() -> void:
+		model.boost()
+		AudioManager.play_sfx("journey_boost"))
 	box.add_child(view)
 
 	info_label = UiKit.label(tr("JOURNEY_HELP"), 32, UiKit.MUTED)
 	box.add_child(info_label)
 
 	_started_ms = Time.get_ticks_msec()
+	AudioManager.play_music("journey")
 	AnalyticsService.track("journey_start", {"level_number": _level_number, "difficulty": diff})
 	_refresh()
 
@@ -69,6 +74,14 @@ func _process(delta: float) -> void:
 	if _ending:
 		return
 	for e in model.step(minf(delta, 0.05)):
+		match e["type"]:
+			"coin":
+				AudioManager.play_sfx("journey_coin", 0.05)
+			"rare":
+				AudioManager.play_sfx("journey_rare")
+			"hit":
+				AudioManager.play_sfx("journey_hit")
+				AudioManager.vibrate(60)
 		if e["type"] == "hit":
 			view.flash = 1.0
 			AnalyticsService.track("journey_hit", {"level_number": _level_number, "hits": model.hits})

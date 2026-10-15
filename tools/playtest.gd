@@ -45,6 +45,8 @@ func _main() -> void:
 			await run_town()
 		"junction":
 			await run_junction()
+		"audio":
+			await run_audio()
 	print("\nSONUÇ [%s] %d geçti, %d başarısız" % [mode, passed, failed])
 	for n in notes:
 		print("  not: " + n)
@@ -619,3 +621,72 @@ func run_junction() -> void:
 	await frames(2)
 	await wait_scene("PuzzleBoard")
 	check(current_scene.canvas._slot_rects.size() == 1, "bölüm 1 tepsisinde yalnız düz parça")
+
+
+func run_audio() -> void:
+	var am: Node = root.get_node("AudioManager")
+	gs().data["settings"] = {"music": true, "sfx": true, "vibration": true, "language": "tr"}
+	gs().apply_language()
+	am.apply_settings()
+	change_scene_to_file("res://scenes/level_select.tscn")
+	await wait_scene("LevelSelect")
+	await frames(10)
+	check(am.current_music == "town" and am.is_music_playing(), "menüde kasaba müziği çalıyor")
+	am.played_log.clear()
+	await tap_button("1")
+	await wait_scene("PuzzleBoard")
+	await frames(5)
+	check(am.played_log.has("ui_tap"), "butona dokununca tık sesi")
+	check(am.current_music == "puzzle_world1", "bulmacada fasıl müziği")
+	var board: Node = current_scene
+	am.played_log.clear()
+	await play_solution(board)
+	await create_timer(0.3).timeout
+	for n in ["tile_pick", "tile_place", "level_win"]:
+		check(am.played_log.has(n), "bölüm oynanırken '%s' çaldı" % n)
+	notes.append("bölüm 1 sesleri: %s" % ", ".join(am.played_log))
+	check(await wait_scene("Journey"), "yolculuk")
+	await frames(5)
+	check(am.current_music == "journey", "yolculuk müziği")
+	var c: Vector2 = current_scene.view.get_global_transform() * (current_scene.view.size / 2.0)
+	await drag_path(c, c + Vector2(220, 0), true, 4)
+	check(am.played_log.has("journey_swipe"), "kaydırma sesi")
+	await tap_button(t("SKIP"))
+	await wait_scene("ResultScreen")
+	await create_timer(1.0).timeout
+	check(am.played_log.has("star_1") and am.played_log.has("star_3"), "sonuçta yıldız sesleri")
+	# Ayarlar: müziği ve efektleri kapat, kanal susmalı ve kayıtta kalmalı
+	change_scene_to_file("res://scenes/settings.tscn")
+	await wait_scene("Settings")
+	await shot("a1_ayarlar_tr")
+	var st: Node = current_scene
+	await tap(st._toggles["music"].get_global_rect().get_center())
+	await tap(st._toggles["sfx"].get_global_rect().get_center())
+	check(not gs().data["settings"]["music"] and not gs().data["settings"]["sfx"], "ayarlar kapandı")
+	check(AudioServer.is_bus_mute(AudioServer.get_bus_index("Music")) and AudioServer.is_bus_mute(AudioServer.get_bus_index("SFX")), "Music ve SFX kanalları sustu")
+	var saved: Dictionary = root.get_node("SaveManager").load_data()
+	check(not saved["settings"]["music"] and not saved["settings"]["sfx"], "ses ayarları kaydedildi")
+	# Dil: İngilizce
+	await tap(st._lang_buttons["en"].get_global_rect().get_center())
+	await frames(3)
+	await wait_scene("Settings")
+	await frames(3)
+	check(find_button("Menu") != null and TranslationServer.get_locale().begins_with("en"), "dil İngilizce'ye geçti")
+	await shot("a2_ayarlar_en")
+	st = current_scene
+	await tap(st._toggles["music"].get_global_rect().get_center())
+	await tap(st._toggles["sfx"].get_global_rect().get_center())
+	await tap(st._lang_buttons["tr"].get_global_rect().get_center())
+	await frames(3)
+	await wait_scene("Settings")
+	await frames(3)
+	check(find_button("Menü") != null and not AudioServer.is_bus_mute(AudioServer.get_bus_index("Music")), "Türkçe'ye dönüldü, müzik açıldı")
+	# Arka plana geçiş: müzik durur, dönünce devam eder
+	change_scene_to_file("res://scenes/level_select.tscn")
+	await wait_scene("LevelSelect")
+	await create_timer(1.0).timeout
+	am.notification(Node.NOTIFICATION_APPLICATION_FOCUS_OUT)
+	check(not am.is_music_playing(), "arka planda müzik durdu")
+	am.notification(Node.NOTIFICATION_APPLICATION_FOCUS_IN)
+	check(am.is_music_playing(), "öne gelince müzik devam etti")
+	await shot("a3_menu")

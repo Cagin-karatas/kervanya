@@ -28,6 +28,7 @@ SaveManager="*res://scripts/autoload/save_manager.gd"
 GameState="*res://scripts/autoload/game_state.gd"
 SceneRouter="*res://scripts/autoload/scene_router.gd"
 AnalyticsService="*res://scripts/autoload/analytics_service.gd"
+AudioManager="*res://scripts/autoload/audio_manager.gd"
 
 [display]
 

@@ -10,6 +10,7 @@ var _cards: Dictionary = {}  # id -> {icon, level, effect, cost, button, reason}
 
 func _ready() -> void:
 	AnalyticsService.track("town_opened", {"town_level": TownModel.town_level(GameState.data)})
+	AudioManager.play_music("town")
 	var box := UiKit.build_screen(self, 18)
 	var top := HBoxContainer.new()
 	var title := UiKit.label(tr("TOWN"), 64, UiKit.ACCENT, HORIZONTAL_ALIGNMENT_LEFT)
@@ -130,8 +131,10 @@ func _refresh() -> void:
 
 
 func _on_upgrade(id: String) -> void:
+	var was := TownModel.level_of(GameState.data, id)
 	if not GameState.upgrade_building(id):
 		return
+	AudioManager.play_sfx("building_build" if was == 0 else "building_upgrade")
 	var icon: BuildingIcon = _cards[id]["icon"]
 	var tw := create_tween()
 	icon.pulse = 1.0

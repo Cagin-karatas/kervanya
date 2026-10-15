@@ -32,6 +32,7 @@ func _initialize() -> void:
 		"test_generated_levels_properties",
 		"test_town_model",
 		"test_junction",
+		"test_audio_assets",
 	]
 	for t in tests:
 		_current = t
@@ -568,3 +569,30 @@ func test_junction() -> void:
 		if lv.tutorial_key == "TUT_JUNCTION":
 			found = int(lv.tile_pool.get(TD.Type.JUNCTION, 0)) > 0
 	check(found, "kavşak öğretim bölümü var ve kavşak içeriyor")
+
+
+func test_audio_assets() -> void:
+	var am = load("res://scripts/autoload/audio_manager.gd")
+	for n in am.SFX_NAMES:
+		check(ResourceLoader.exists(am.SFX_PATH % n), "efekt dosyası var: %s" % n)
+	for n in am.MUSIC_NAMES:
+		check(ResourceLoader.exists(am.MUSIC_PATH % n), "müzik dosyası var: %s" % n)
+	# Koddaki her play_sfx / play_music çağrısı tanımlı bir sese gitmeli.
+	var re := RegEx.create_from_string("play_(sfx|music)\\(\"([a-z0-9_]+)\"")
+	var re_bind := RegEx.create_from_string("play_sfx\\.bind\\(\"([a-z0-9_]+)\"")
+	var files := ["res://scripts/scenes/puzzle_board.gd", "res://scripts/scenes/journey.gd", "res://scripts/scenes/town.gd",
+			"res://scripts/scenes/result_screen.gd", "res://scripts/scenes/level_select.gd", "res://scripts/ui/ui_kit.gd"]
+	var seen := 0
+	for f in files:
+		var src := FileAccess.get_file_as_string(f)
+		for m in re.search_all(src):
+			seen += 1
+			var list: Array = am.SFX_NAMES if m.get_string(1) == "sfx" else am.MUSIC_NAMES
+			check(list.has(m.get_string(2)), "%s: tanımsız ses '%s'" % [f.get_file(), m.get_string(2)])
+		for m in re_bind.search_all(src):
+			seen += 1
+			check(am.SFX_NAMES.has(m.get_string(1)), "%s: tanımsız ses '%s'" % [f.get_file(), m.get_string(1)])
+	check(seen >= 10, "koddaki ses çağrıları bulundu (%d)" % seen)
+	for k in am.SFX_DB:
+		check(am.SFX_NAMES.has(k), "ses düzeyi tablosunda bilinmeyen efekt: %s" % k)
+	check(FileAccess.file_exists("res://docs/lisanslar.md"), "lisans envanteri var")

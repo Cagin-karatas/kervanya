@@ -36,6 +36,14 @@ Menüde veya sonuç ekranında **Kasaba**. Bina tablosu `data/buildings.json` (b
 
 İlk bina (Kervansaray, 20 altın) ilk iki bölümün altınıyla kurulur; reklam/ödeme gerekmez.
 
+## Ses (plan §12)
+
+`AudioManager` (autoload): Music ve SFX kanalları, parça geçişlerinde yumuşak geçiş, uygulama arka plana
+geçince müzik durur. **Ayarlar** ekranında müzik, efekt ve titreşim ayrı kapatılır; dil seçilir.
+İlk ses paketi kodla sentezlenir (lisans sorunu yok): `python3 tools/gen_audio.py` → `assets/audio/`.
+21 efekt, 3 müzik döngüsü (bulmaca: Hicaz, kasaba: D majör pentatonik, yolculuk: düm-tek ritmi).
+Varlık/lisans envanteri: [docs/lisanslar.md](docs/lisanslar.md).
+
 ## Test kaydı (analitik)
 
 `AnalyticsService` üretim planı §10'daki olayları ortak alanlarıyla (`event_time`, `app_version`, `platform`,

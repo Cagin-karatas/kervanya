@@ -27,7 +27,7 @@ func default_data() -> Dictionary:
 		"building_levels": {},
 		"daily_task_state": {},
 		"cosmetics_owned": [],
-		"settings": {"music": true, "sfx": true, "vibration": true},
+		"settings": {"music": true, "sfx": true, "vibration": true, "language": ""},
 		"privacy_choices": {},
 		"content_pack_version": 1,
 		"purchase_entitlements": [],

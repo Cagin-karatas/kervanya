@@ -11,6 +11,7 @@ func _ready() -> void:
 	box.add_child(UiKit.label(tr("LEVEL_N") % (idx + 1), 44, UiKit.MUTED))
 	box.add_child(UiKit.label(tr("WIN_TITLE") if won else tr("FAIL_TITLE"), 80, UiKit.ACCENT if won else UiKit.TEXT))
 	if won:
+		_play_stars(int(r.get("stars", 0)))
 		var stars := StarRow.new(r.get("stars", 0), 110.0)
 		stars.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 		box.add_child(stars)
@@ -41,6 +42,11 @@ func _ready() -> void:
 		box.add_child(UiKit.button(town_text, SceneRouter.goto_town, 140))
 	box.add_child(UiKit.button(tr("RETRY"), SceneRouter.goto_level.bind(idx), 140))
 	box.add_child(UiKit.button(tr("MENU"), SceneRouter.goto_menu, 140))
+
+
+func _play_stars(n: int) -> void:
+	for i in range(n):
+		get_tree().create_timer(0.25 + i * 0.22).timeout.connect(AudioManager.play_sfx.bind("star_%d" % (i + 1)))
 
 
 func _notification(what: int) -> void:

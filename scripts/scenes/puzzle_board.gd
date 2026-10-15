@@ -55,6 +55,10 @@ func _ready() -> void:
 			canvas.tutorial_mode = "junction"
 	canvas.board_changed.connect(_on_board_changed)
 	canvas.rejected.connect(_on_rejected)
+	canvas.picked.connect(AudioManager.play_sfx.bind("tile_pick", 0.05))
+	AudioManager.play_music("puzzle_world1")
+	if canvas.show_hint:
+		AudioManager.play_sfx("hint")
 
 	var bottom := HBoxContainer.new()
 	bottom.add_theme_constant_override("separation", 24)
@@ -87,7 +91,17 @@ func _elapsed_ms() -> int:
 	return Time.get_ticks_msec() - _started_ms
 
 
+const ACT_SFX := {"place": "tile_place", "rotate": "tile_rotate", "move": "tile_place",
+		"remove": "tile_return", "undo": "undo"}
+var _connected_hubs := 1
+
+
 func _on_model_acted(kind: String) -> void:
+	AudioManager.play_sfx(ACT_SFX.get(kind, "ui_tap"), 0.06)
+	var hubs := _count_connected_hubs()
+	if hubs > _connected_hubs and not model.is_complete():
+		AudioManager.play_sfx("route_connect")
+	_connected_hubs = hubs
 	if _is_test:
 		return
 	var names := {"place": "tile_placed", "rotate": "tile_rotated", "move": "tile_moved",
@@ -123,6 +137,9 @@ func _on_board_changed() -> void:
 
 func _finish(won: bool) -> void:
 	_ending = true
+	AudioManager.play_sfx("level_win" if won else "level_fail")
+	if not won:
+		AudioManager.vibrate(80)
 	canvas.input_locked = true
 	undo_button.disabled = true
 	if _is_test:
@@ -151,6 +168,11 @@ func _finish(won: bool) -> void:
 
 
 func _on_rejected(reason: String) -> void:
+	if reason != "tap_tray":
+		AudioManager.play_sfx("tile_invalid")
+		AudioManager.vibrate(30)
+	else:
+		AudioManager.play_sfx("hint")
 	if reason == "no_moves":
 		info_label.text = tr("NO_MOVES")
 	elif reason == "tap_tray":
@@ -200,3 +222,12 @@ func _on_back() -> void:
 func _leave_test() -> void:
 	GameState.test_level = null
 	SceneRouter.goto_level_editor()
+
+
+func _count_connected_hubs() -> int:
+	var r := model.reachable()
+	var n := 0
+	for c in [level.start_cell, level.goal_cell] + level.points_of_interest:
+		if r.has(c):
+			n += 1
+	return n

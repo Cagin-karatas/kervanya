@@ -18,6 +18,21 @@ func _ready() -> void:
 	load_levels()
 	data = SaveManager.load_data()
 	SaveManager.save_data(data)
+	apply_language()
+
+
+func apply_language() -> void:
+	var code := str(data.get("settings", {}).get("language", ""))
+	TranslationServer.set_locale(code if not code.is_empty() else OS.get_locale_language())
+
+
+func set_setting(key: String, value) -> void:
+	data["settings"][key] = value
+	SaveManager.save_data(data)
+	if key == "language":
+		apply_language()
+	AudioManager.apply_settings()
+	AnalyticsService.track("settings_changed", {"setting": key, "value": (str(value) if str(value) != "" else "system") if value is String else value})
 
 
 func load_levels() -> void:

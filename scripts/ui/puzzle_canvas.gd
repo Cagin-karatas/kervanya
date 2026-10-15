@@ -6,6 +6,7 @@ extends Control
 
 signal board_changed
 signal rejected(reason: String)
+signal picked
 
 const COL_BOARD := Color("#3a332d")
 const COL_CELL := Color("#e9dfcf")
@@ -162,6 +163,7 @@ func _on_motion(pos: Vector2) -> void:
 
 
 func _begin_drag(pos: Vector2) -> void:
+	picked.emit()
 	if _press["source"] == "tray":
 		_drag = {"source": "tray", "type": _press["type"], "rot": 0, "pos": pos}
 	else:

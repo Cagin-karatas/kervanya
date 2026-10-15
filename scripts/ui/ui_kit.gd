@@ -55,8 +55,16 @@ static func button(text: String, on_pressed: Callable, min_height: int = 120) ->
 	b.custom_minimum_size = Vector2(0, min_height)
 	b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	b.add_theme_font_size_override("font_size", 44)
+	b.pressed.connect(_tap_sound)
 	b.pressed.connect(on_pressed)
 	return b
+
+
+static func _tap_sound() -> void:
+	var tree := Engine.get_main_loop() as SceneTree
+	var am := tree.root.get_node_or_null("AudioManager") if tree != null else null
+	if am != null:
+		am.play_sfx("ui_tap")
 
 
 static func label(text: String, font_size: int = 40, color: Color = TEXT,
